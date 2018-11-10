@@ -11,10 +11,10 @@ func TestEncodeString(t *testing.T) {
 	str := strings.Repeat("s", N+1)
 	chunks, err := enc.Encode(str)
 	if err != nil {
-		t.Fatalf("encodeString failed: %v", err)
+		t.Fatalf("Encode failed: %v", err)
 	}
 	if len(chunks) != 2 {
-		t.Fatalf("expected 2 chunks")
+		t.Fatalf("Expected 2 chunks")
 	}
 
 	expected := "0/65|" + strings.Repeat("s", N)
