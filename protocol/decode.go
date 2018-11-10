@@ -1,14 +1,8 @@
 package protocol
 
 import (
-	"errors"
 	"fmt"
 	"sort"
-)
-
-// default errors
-var (
-	ErrInvalidFrame = errors.New("invalid frame")
 )
 
 // Decoder represents protocol decode.
@@ -43,16 +37,16 @@ func NewDecoderSize(size int) *Decoder {
 // DecodeChunk takes a single chunk of data and decodes it.
 func (d *Decoder) DecodeChunk(data string) error {
 	if data == "" || len(data) < 4 {
-		return ErrInvalidFrame
+		return fmt.Errorf("invalid frame: \"%s\"", data)
 	}
 
 	var (
 		offset, total int
 		payload       []byte
 	)
-	_, err := fmt.Sscanf(data, "%x/%x|%s", &offset, &total, &payload)
+	_, err := fmt.Sscanf(data, "%d/%d|%s", &offset, &total, &payload)
 	if err != nil {
-		return fmt.Errorf("invalid frame: %v", err)
+		return fmt.Errorf("invalid frame: %v (%s)", err, data)
 	}
 
 	// allocate enough memory at first total read

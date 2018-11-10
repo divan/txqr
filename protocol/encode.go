@@ -33,7 +33,7 @@ func (e *Encoder) EncodeReader(r io.Reader) ([]string, error) {
 // futher converted to QR code frames.
 func (e *Encoder) Encode(str string) ([]string, error) {
 	if len(str) < e.chunkLen {
-		return []string{str}, nil
+		return []string{e.frame(0, len(str), str)}, nil
 	}
 
 	numChunks := len(str)/e.chunkLen + 1
@@ -54,5 +54,5 @@ func (e *Encoder) Encode(str string) ([]string, error) {
 }
 
 func (e *Encoder) frame(count, total int, str string) string {
-	return fmt.Sprintf("%x/%x|%s", count, total, str)
+	return fmt.Sprintf("%d/%d|%s", count, total, str)
 }
