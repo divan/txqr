@@ -17,11 +17,11 @@ func TestEncodeString(t *testing.T) {
 		t.Fatalf("Expected 2 chunks")
 	}
 
-	expected := "0/65|" + strings.Repeat("s", N)
+	expected := "0/101|" + strings.Repeat("s", N)
 	if chunks[0] != expected {
 		t.Fatalf("First chunk is invalid: '%s'", chunks[0])
 	}
-	expected = "64/65|" + "s"
+	expected = "100/101|" + "s"
 	if chunks[1] != expected {
 		t.Fatalf("Second chunk is invalid: '%s'", chunks[1])
 	}
