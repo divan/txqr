@@ -2,7 +2,7 @@ package protocol
 
 import (
 	"fmt"
-	"sort"
+	"strings"
 )
 
 // Decoder represents protocol decode.
@@ -11,6 +11,8 @@ type Decoder struct {
 	complete bool
 	total    int
 	frames   []frameInfo
+	cache    map[string]struct{}
+	progress int
 }
 
 // frameInfo represents the information about read frames.
@@ -23,6 +25,7 @@ type frameInfo struct {
 func NewDecoder() *Decoder {
 	return &Decoder{
 		buffer: []byte{},
+		cache:  make(map[string]struct{}),
 	}
 }
 
@@ -40,6 +43,11 @@ func (d *Decoder) DecodeChunk(data string) error {
 		return fmt.Errorf("invalid frame: \"%s\"", data)
 	}
 
+	// continuous QR reading often sends the same chunk in a row, skip it
+	if d.isCached(data) {
+		return nil
+	}
+
 	var (
 		offset, total int
 		payload       []byte
@@ -50,9 +58,13 @@ func (d *Decoder) DecodeChunk(data string) error {
 	}
 
 	// allocate enough memory at first total read
-	if total > d.total {
+	if d.total == 0 {
 		d.buffer = make([]byte, total)
 		d.total = total
+	}
+
+	if total > d.total {
+		return fmt.Errorf("total changed during sequence, aborting")
 	}
 
 	size := len(payload)
@@ -61,8 +73,7 @@ func (d *Decoder) DecodeChunk(data string) error {
 
 	copy(d.buffer[offset:offset+size], payload)
 
-	// run the integrity check
-	d.complete = d.isCompleted()
+	d.updateProgress()
 
 	return nil
 }
@@ -77,28 +88,43 @@ func (d *Decoder) DataBytes() []byte {
 	return d.buffer
 }
 
+// Progress returns reading progress in percentage.
+func (d *Decoder) Progress() int {
+	return d.progress
+}
+
 // IsCompleted reports whether the read was completed successfully or not.
 func (d *Decoder) IsCompleted() bool {
 	return d.complete
 }
 
-// isCompleted checks if all frames has been read.
+// updateProgress updates progress and complete state of reading.
 // FIXME(divan): this approach might give false negatives in extreme cases, like
 // many dynamic changes of chunk sizes.
-func (d *Decoder) isCompleted() bool {
-	sort.Slice(d.frames, func(i, j int) bool {
-		return d.frames[i].offset < d.frames[j].offset
-	})
-
+func (d *Decoder) updateProgress() {
 	var cur int
 	for _, frame := range d.frames {
-		// we found the gap, next frame starts farther then current position
-		if frame.offset > cur {
-			return false
-		}
-
 		cur += frame.size
 	}
 
-	return cur == d.total
+	d.progress = 100 * cur / d.total
+	d.complete = cur == d.total
+}
+
+// isCached takes the header of chunk data and see if it's been cached.
+// If not, it caches it.
+func (d *Decoder) isCached(data string) bool {
+	idx := strings.IndexByte(data, '|')
+	if idx == -1 {
+		return false
+	}
+
+	header := data[:idx]
+	if _, ok := d.cache[header]; ok {
+		return true
+	}
+
+	// cache it
+	d.cache[header] = struct{}{}
+	return false
 }
