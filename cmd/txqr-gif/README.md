@@ -15,7 +15,7 @@ go get github.com/divan/txqr/cmd/txqr-gif
 To encode file `file.jpg` with 5fps, image size 600px and 450 bytes per QR frame, run:
 
 ```
-txqr-gif -size 600 -split 450 -delay 200ms fil.jpg
+txqr-gif -size 600 -split 450 -delay 200ms file.jpg
 ```
 
 
