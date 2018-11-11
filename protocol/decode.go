@@ -128,6 +128,25 @@ func (d *Decoder) Progress() int {
 	return d.progress
 }
 
+// TotalTime returns the total scan duration in human readable form - from first to last read chunk.
+func (d *Decoder) TotalTime() string {
+	dur := time.Since(d.start)
+	return formatDuration(dur)
+}
+
+// formatDuration converts "12.232312313s" to "12.2s"
+func formatDuration(d time.Duration) string {
+	if d > time.Second {
+		d = d - d%(100*time.Millisecond)
+	}
+	return d.String()
+}
+
+// TotalSize returns the data size in human readable form.
+func (d *Decoder) TotalSize() string {
+	return byten.Size(int64(len(d.buffer)))
+}
+
 // IsCompleted reports whether the read was completed successfully or not.
 func (d *Decoder) IsCompleted() bool {
 	return d.complete

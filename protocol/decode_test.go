@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestDecode(t *testing.T) {
@@ -81,5 +82,14 @@ func TestProgress(t *testing.T) {
 		if dec.Progress() != i+1 {
 			t.Fatalf("Progress should be equal to %v, but got %v", i+1, dec.Progress())
 		}
+	}
+}
+
+func TestTotalTime(t *testing.T) {
+	dur := 12345678 * time.Microsecond // 12.345678s
+	got := formatDuration(dur)
+	expected := "12.3s"
+	if got != expected {
+		t.Fatalf("Expected str to be '%s', but got '%s'", expected, got)
 	}
 }
