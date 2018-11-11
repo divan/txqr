@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	size := flag.Int("size", 100, "Chunk size for data split per frame")
+	split := flag.Int("split", 100, "Chunk size for data split per frame")
 	delay := flag.Duration("delay", 100*time.Millisecond, "Delay between frames")
 	flag.Parse()
 
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	str := base64.StdEncoding.EncodeToString(data)
-	chunks, err := protocol.NewEncoder(*size).Encode(str)
+	chunks, err := protocol.NewEncoder(*split).Encode(str)
 	if err != nil {
 		log.Fatalf("Encode failed: %v", err)
 	}
