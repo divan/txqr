@@ -3,6 +3,9 @@ package protocol
 import (
 	"fmt"
 	"strings"
+	"time"
+
+	"github.com/pyk/byten"
 )
 
 // Decoder represents protocol decode.
@@ -12,7 +15,10 @@ type Decoder struct {
 	total    int
 	frames   []frameInfo
 	cache    map[string]struct{}
+
 	progress int
+	speed    int // avg reading speed
+	start    time.Time
 }
 
 // frameInfo represents the information about read frames.
@@ -39,6 +45,14 @@ func NewDecoderSize(size int) *Decoder {
 
 // DecodeChunk takes a single chunk of data and decodes it.
 func (d *Decoder) DecodeChunk(data string) error {
+	if d.IsCompleted() {
+		return nil
+	}
+
+	if d.start.IsZero() {
+		d.start = time.Now()
+	}
+
 	if data == "" || len(data) < 4 {
 		return fmt.Errorf("invalid frame: \"%s\"", data)
 	}
@@ -92,6 +106,11 @@ func (d *Decoder) DataBytes() []byte {
 	return d.buffer
 }
 
+// Speed returns avg reading speed.
+func (d *Decoder) Speed() string {
+	return fmt.Sprintf("%s/s", byten.Size(int64(d.speed)))
+}
+
 // Progress returns reading progress in percentage.
 func (d *Decoder) Progress() int {
 	return d.progress
@@ -111,6 +130,7 @@ func (d *Decoder) updateProgress() {
 		cur += frame.size
 	}
 
+	d.speed = cur * int(time.Second) / int(time.Since(d.start))
 	d.progress = 100 * cur / d.total
 	d.complete = cur == d.total
 }
