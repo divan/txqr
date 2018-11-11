@@ -1,1 +1,6 @@
-txqr-ascii
+txqr-gif
+*.gif
+*.png
+*.jpeg
+*.jpg
+
