@@ -43,18 +43,21 @@ func (d *Decoder) DecodeChunk(data string) error {
 		return fmt.Errorf("invalid frame: \"%s\"", data)
 	}
 
+	idx := strings.IndexByte(data, '|')
+	if idx == -1 {
+		return fmt.Errorf("invalid frame: \"%s\"", data)
+	}
+
+	header := data[:idx]
 	// continuous QR reading often sends the same chunk in a row, skip it
-	if d.isCached(data) {
+	if d.isCached(header) {
 		return nil
 	}
 
-	var (
-		offset, total int
-		payload       []byte
-	)
-	_, err := fmt.Sscanf(data, "%d/%d|%s", &offset, &total, &payload)
+	var offset, total int
+	_, err := fmt.Sscanf(header, "%d/%d", &offset, &total)
 	if err != nil {
-		return fmt.Errorf("invalid frame: %v (%s)", err, data)
+		return fmt.Errorf("invalid header: %v (%s)", err, header)
 	}
 
 	// allocate enough memory at first total read
@@ -67,9 +70,10 @@ func (d *Decoder) DecodeChunk(data string) error {
 		return fmt.Errorf("total changed during sequence, aborting")
 	}
 
+	payload := data[idx+1:]
 	size := len(payload)
 	// TODO(divan): optmize memory allocation
-	d.frames = append(d.frames, frameInfo{offset, size})
+	d.frames = append(d.frames, frameInfo{offset: offset, size: size})
 
 	copy(d.buffer[offset:offset+size], payload)
 
@@ -113,13 +117,7 @@ func (d *Decoder) updateProgress() {
 
 // isCached takes the header of chunk data and see if it's been cached.
 // If not, it caches it.
-func (d *Decoder) isCached(data string) bool {
-	idx := strings.IndexByte(data, '|')
-	if idx == -1 {
-		return false
-	}
-
-	header := data[:idx]
+func (d *Decoder) isCached(header string) bool {
 	if _, ok := d.cache[header]; ok {
 		return true
 	}
