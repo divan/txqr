@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -29,7 +30,8 @@ func main() {
 		log.Fatalf("Read input file failed: %v", err)
 	}
 
-	chunks, err := protocol.NewEncoder(*size).Encode(string(data))
+	str := base64.StdEncoding.EncodeToString(data)
+	chunks, err := protocol.NewEncoder(*size).Encode(str)
 	if err != nil {
 		log.Fatalf("Encode failed: %v", err)
 	}
@@ -52,7 +54,7 @@ func main() {
 			duration := time.Since(start)
 			rate := int(time.Second) * total / int(duration)
 
-			fmt.Printf("Speed: %v/s | whole file: %v\n", byten.Size(int64(rate)), avg)
+			fmt.Printf("Speed: %v/s | whole file: %v in %v\n", byten.Size(int64(rate)), byten.Size(int64(len(str))), avg)
 
 			qrterminal.GenerateWithConfig(chunk, config)
 
