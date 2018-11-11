@@ -19,6 +19,9 @@ type Decoder struct {
 	progress int
 	speed    int // avg reading speed
 	start    time.Time
+
+	lastChunk    time.Time // last chunk decode request
+	readInterval time.Duration
 }
 
 // frameInfo represents the information about read frames.
@@ -48,6 +51,10 @@ func (d *Decoder) DecodeChunk(data string) error {
 	if d.IsCompleted() {
 		return nil
 	}
+	if !d.lastChunk.IsZero() {
+		d.readInterval = time.Now().Sub(d.lastChunk)
+	}
+	d.lastChunk = time.Now()
 
 	if d.start.IsZero() {
 		d.start = time.Now()
@@ -109,6 +116,11 @@ func (d *Decoder) DataBytes() []byte {
 // Speed returns avg reading speed.
 func (d *Decoder) Speed() string {
 	return fmt.Sprintf("%s/s", byten.Size(int64(d.speed)))
+}
+
+// ReadInterval returns the latest read interval in ms.
+func (d *Decoder) ReadInterval() int64 {
+	return int64(d.readInterval / time.Millisecond)
 }
 
 // Progress returns reading progress in percentage.
