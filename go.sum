@@ -1,0 +1,12 @@
+github.com/makiuchi-d/gozxing v0.0.0-20181111004219-a01698524e72 h1:hnSfRf2GSdQC/aOxI1ZNmqapRcgQfeld4ItWYGp+xLI=
+github.com/makiuchi-d/gozxing v0.0.0-20181111004219-a01698524e72/go.mod h1:WoI7z45M7ZNA5BJxiJHaB+x7+k8S/3phW5Y13IR4yWY=
+github.com/mdp/qrterminal v1.0.1 h1:07+fzVDlPuBlXS8tB0ktTAyf+Lp1j2+2zK3fBOL5b7c=
+github.com/mdp/qrterminal v1.0.1/go.mod h1:Z33WhxQe9B6CdW37HaVqcRKzP+kByF3q/qLxOGe12xQ=
+github.com/pyk/byten v0.0.0-20140925233358-f847a130bf6d h1:/0nqYrqVyPTVDT2jPx9z9BZ+ItJWlWA9VITUGvNaZkI=
+github.com/pyk/byten v0.0.0-20140925233358-f847a130bf6d/go.mod h1:El8LdwAxb76Ih0mRmpu9uMVq+ajiqGSxmYiUe+nSr+w=
+github.com/skip2/go-qrcode v0.0.0-20171229120447-cf5f9fa2f0d8 h1:5C4yAeYifeRO+7z2/H2kxL8tJZE9ZE9LpxK6YUZPByo=
+github.com/skip2/go-qrcode v0.0.0-20171229120447-cf5f9fa2f0d8/go.mod h1:PLPIyL7ikehBD1OAjmKKiOEhbvWyHGaNDjquXMcYABo=
+golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
+golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
+rsc.io/qr v0.2.0 h1:6vBLea5/NRMVTz8V66gipeLycZMl/+UlFmk8DvqQ6WY=
+rsc.io/qr v0.2.0/go.mod h1:IF+uZjkb9fqyeF/4tlBoynqmQxUoPfWEKh921coOuXs=
