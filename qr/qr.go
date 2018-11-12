@@ -9,9 +9,26 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
+// RecoveryLevel represents QR encoding error detection/recovery capacity.
+type RecoveryLevel int
+
+const (
+	// Low is Level L: 7% error recovery.
+	Low RecoveryLevel = iota
+
+	// Medium is Level M: 15% error recovery. Good default choice.
+	Medium
+
+	// High is Level Q: 25% error recovery.
+	High
+
+	// Highers is Level H: 30% error recovery.
+	Highest
+)
+
 // Encode encodes data into the image with QR code.
-func Encode(data string, size int) (image.Image, error) {
-	qr, err := qrcode.New(data, qrcode.Medium)
+func Encode(data string, size int, lvl RecoveryLevel) (image.Image, error) {
+	qr, err := qrcode.New(data, qrcode.RecoveryLevel(lvl))
 	if err != nil {
 		return nil, fmt.Errorf("encode QR: %v", err)
 	}
