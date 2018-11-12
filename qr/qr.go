@@ -1,6 +1,7 @@
 package qr
 
 import (
+	"errors"
 	"fmt"
 	"image"
 
@@ -18,5 +19,5 @@ func Encode(data string, size int) (image.Image, error) {
 
 // Decode an image with QR code.
 func Decode(img image.Image) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	return "", errors.New("not implemented")
 }
