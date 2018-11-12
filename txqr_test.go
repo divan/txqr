@@ -1,9 +1,12 @@
 package txqr
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestTXQR(t *testing.T) {
-	str := "hello, world!"
+	str := strings.Repeat("hello, world!", 1000)
 	ch, err := Encode(str)
 	if err != nil {
 		t.Fatalf("Encode failed: %v", err)

@@ -37,7 +37,7 @@ func Decode(ch <-chan image.Image) (string, error) {
 	for img := range ch {
 		chunk, err := qr.Decode(img)
 		if err != nil {
-			return "", fmt.Errorf("decode: %v", err)
+			return "", fmt.Errorf("decode QR: %v", err)
 		}
 		err = dec.DecodeChunk(chunk)
 		if err != nil {
