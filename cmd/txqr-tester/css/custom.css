@@ -1,0 +1,25 @@
+body {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+h1 {
+	font-family: "Helvetica Neue";
+	font-weight: 300;
+}
+
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    body {
+		background: #101010 -webkit-gradient(linear, left top, left bottom, from(#050505), to(#101010)) no-repeat;
+        color: white;
+    }
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+    body {
+		background: #c0c0c0 -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#f0f0f0)) no-repeat;
+    }
+}
