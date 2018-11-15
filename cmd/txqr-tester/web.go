@@ -31,13 +31,15 @@ func init() {
 // StartApp generates app page, serves it via http
 // and tries to open it using default browser.
 func StartApp(bind string) error {
+	ip := GetLocalIP()
 	info := PageInfo{
-		WSAddress: "ws://127.12.1.1:1999/ws",
+		WSAddress: fmt.Sprintf("ws://%s%s/ws", ip, bind),
 	}
 	http.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, info)
 	})
 	http.Handle("/", redirectToIndex(http.FileServer(assetFS())))
+	http.HandleFunc("/ws", NewWSServer().Handle)
 	go StartBrowser("http://localhost" + bind)
 
 	return http.ListenAndServe(bind, nil)
