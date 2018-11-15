@@ -1,4 +1,4 @@
-//go:generate go-bindata-assetfs app/index.html app/css/... app/txqr-tester.js
+//go:generate go-bindata-assetfs app/index.tmpl app/app.js app/css/...
 package main
 
 import (
@@ -8,10 +8,11 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 )
 
 type PageInfo struct {
-	Title string
+	WSAddress string
 }
 
 // indexTmpl is a html template for index page.
@@ -20,24 +21,30 @@ var (
 )
 
 func init() {
-	data, err := Asset("app/index.html")
+	data, err := Asset("app/index.tmpl")
 	if err != nil {
 		panic(err)
 	}
-	indexTmpl = template.Must(template.New("index.html").Parse(string(data)))
+	indexTmpl = template.Must(template.New("index.tmpl").Parse(string(data)))
 }
 
 // StartApp generates app page, serves it via http
 // and tries to open it using default browser.
 func StartApp(bind string) error {
-	http.Handle("/", http.FileServer(assetFS()))
+	info := PageInfo{
+		WSAddress: "ws://127.12.1.1:1999/ws",
+	}
+	http.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, info)
+	})
+	http.Handle("/", redirectToIndex(http.FileServer(assetFS())))
 	go StartBrowser("http://localhost" + bind)
 
 	return http.ListenAndServe(bind, nil)
 }
 
 // handler handles index page.
-func handler(w http.ResponseWriter, r *http.Request, info *PageInfo) {
+func handler(w http.ResponseWriter, r *http.Request, info PageInfo) {
 	err := indexTmpl.Execute(w, info)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -64,4 +71,13 @@ func StartBrowser(url string) bool {
 	cmd := exec.Command(args[0], append(args[1:], url)...)
 	fmt.Println("If browser window didn't appear, please go to this url:", url)
 	return cmd.Start() == nil
+}
+
+func redirectToIndex(h http.Handler) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") {
+			http.Redirect(w, r, "/index.html", http.StatusMovedPermanently)
+		}
+		h.ServeHTTP(w, r)
+	})
 }

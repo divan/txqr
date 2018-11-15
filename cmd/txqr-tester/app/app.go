@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/vecty"
 	"github.com/gopherjs/vecty/elem"
 	"github.com/gopherjs/vecty/event"
@@ -12,13 +15,18 @@ type App struct {
 
 	session  *Session
 	settings *Settings
+
+	wsAddress string
 }
 
 // NewApp creates and inits new app page.
 func NewApp() *App {
+	wsAddress := js.Global.Get("WSAddress").String()
+	fmt.Println("WSaddress:", wsAddress)
 	app := &App{
-		session:  NewSession(),
-		settings: NewSettings(),
+		session:   NewSession(),
+		settings:  NewSettings(),
+		wsAddress: wsAddress,
 	}
 
 	return app

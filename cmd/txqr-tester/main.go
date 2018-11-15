@@ -1,3 +1,4 @@
+//go:generate gopherjs build ./app -o ./app/app.js
 package main
 
 import (

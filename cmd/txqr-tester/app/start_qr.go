@@ -42,5 +42,19 @@ func (a *App) StartQR() vecty.ComponentOrHTML {
 			),
 			renderImage(img),
 		),
+
+		elem.Footer(
+			vecty.Markup(
+				vecty.Class("card-footer"),
+			),
+			elem.Paragraph(
+				vecty.Markup(
+					vecty.Class("card-footer-item"),
+				),
+				vecty.Text(
+					fmt.Sprintf("Started WS server on: %s", a.wsAddress),
+				),
+			),
+		),
 	)
 }
