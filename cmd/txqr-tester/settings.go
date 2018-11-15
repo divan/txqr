@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/divan/txqr/qr"
@@ -28,9 +29,17 @@ func NewSettings() *Settings {
 // Render implements the vecty.Component interface for Settings.
 func (s *Settings) Render() vecty.ComponentOrHTML {
 	return elem.Div(
+		elem.Heading1(
+			vecty.Markup(
+				vecty.Class("title", "has-text-weight-light"),
+			),
+			vecty.Text("Settings"),
+		),
+		elem.HorizontalRule(),
 		s.chunkSizesRow(),
 		s.fpsRow(),
 		s.recoveryLevelsRow(),
+		s.hint(),
 	)
 }
 
@@ -144,6 +153,24 @@ func checkboxInput(name string, val bool) vecty.ComponentOrHTML {
 				),
 			),
 			vecty.Text(name),
+		),
+	)
+}
+
+func (s *Settings) hint() vecty.ComponentOrHTML {
+	nChunks := (s.config.StopSize - s.config.StartSize) / s.config.SizeStep
+	nFPS := s.config.StopFPS - s.config.StartFPS
+	numberOfTests := len(s.config.Levels) * nFPS * nChunks
+	text := fmt.Sprintf("This will run %d tests", numberOfTests)
+	return elem.Div(
+		vecty.Markup(
+			vecty.Class("message", "is-info"),
+		),
+		elem.Div(
+			vecty.Markup(
+				vecty.Class("message-body"),
+			),
+			vecty.Text(text),
 		),
 	)
 }
