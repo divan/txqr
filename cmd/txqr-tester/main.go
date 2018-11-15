@@ -1,15 +1,14 @@
 package main
 
 import (
-	"github.com/gopherjs/vecty"
+	"flag"
+	"log"
 )
 
 func main() {
-	app := NewApp()
+	flag.Parse()
 
-	vecty.SetTitle("TXQR Automated Tester")
-	vecty.AddStylesheet("css/bulma.css")
-	vecty.AddStylesheet("css/bulma-extensions.min.css")
-	vecty.AddStylesheet("css/custom.css")
-	vecty.RenderBody(app)
+	if err := StartApp(":1999"); err != nil {
+		log.Fatalf("[ERROR] Can't start web server to serve the app")
+	}
 }
