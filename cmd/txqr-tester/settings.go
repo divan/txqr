@@ -7,6 +7,7 @@ import (
 	"github.com/divan/txqr/qr"
 	"github.com/gopherjs/vecty"
 	"github.com/gopherjs/vecty/elem"
+	"github.com/gopherjs/vecty/event"
 	"github.com/gopherjs/vecty/prop"
 )
 
@@ -53,10 +54,10 @@ func (s *Settings) chunkSizesRow() vecty.ComponentOrHTML {
 			vecty.Markup(
 				vecty.Class("field-body"),
 			),
-			numberInput("from", s.config.StartSize),
-			numberInput("to", s.config.StopSize),
+			s.sizeInput("from", &s.config.StartSize),
+			s.sizeInput("to", &s.config.StopSize),
 			label("Step"),
-			numberInput("step", s.config.SizeStep),
+			s.numberInput("step", &s.config.SizeStep),
 		),
 	)
 }
@@ -71,14 +72,15 @@ func (s *Settings) fpsRow() vecty.ComponentOrHTML {
 			vecty.Markup(
 				vecty.Class("field-body"),
 			),
-			numberInput("from", s.config.StartFPS),
-			numberInput("to", s.config.StopFPS),
+			s.numberInput("from", &s.config.StartFPS),
+			s.numberInput("to", &s.config.StopFPS),
 		),
 	)
 }
 
-func numberInput(name string, val int) vecty.ComponentOrHTML {
-	str := strconv.Itoa(val)
+func (s *Settings) sizeInput(name string, val *int) vecty.ComponentOrHTML {
+	str := strconv.Itoa(*val)
+	stepStr := strconv.Itoa(s.config.SizeStep)
 	return elem.Div(
 		vecty.Markup(
 			vecty.Class("field"),
@@ -93,6 +95,44 @@ func numberInput(name string, val int) vecty.ComponentOrHTML {
 					prop.Type(prop.TypeNumber),
 					vecty.Attribute("placeholder", name),
 					vecty.Attribute("value", str),
+					vecty.Attribute("step", stepStr),
+
+					event.Input(func(event *vecty.Event) {
+						v := event.Target.Get("value").Int()
+
+						*val = v
+						vecty.Rerender(s)
+					}),
+				),
+			),
+		),
+	)
+}
+
+func (s *Settings) numberInput(name string, val *int) vecty.ComponentOrHTML {
+	str := strconv.Itoa(*val)
+	return elem.Div(
+		vecty.Markup(
+			vecty.Class("field"),
+		),
+		elem.Paragraph(
+			vecty.Markup(
+				vecty.Class("control", "is-expanded"),
+			),
+			elem.Input(
+				vecty.Markup(
+					vecty.Class("input"),
+					prop.Type(prop.TypeNumber),
+					vecty.Attribute("placeholder", name),
+					vecty.Attribute("value", str),
+					vecty.Attribute("min", "0"),
+
+					event.Input(func(event *vecty.Event) {
+						v := event.Target.Get("value").Int()
+
+						*val = v
+						vecty.Rerender(s)
+					}),
 				),
 			),
 		),
@@ -124,15 +164,15 @@ func (s *Settings) recoveryLevelsRow() vecty.ComponentOrHTML {
 			vecty.Markup(
 				vecty.Class("field-body"),
 			),
-			checkboxInput("low", levels.has(qr.Low)),
-			checkboxInput("medium", levels.has(qr.Medium)),
-			checkboxInput("high", levels.has(qr.High)),
-			checkboxInput("highest", levels.has(qr.Highest)),
+			s.checkboxInput("low", levels.has(qr.Low), func(v bool) { levels.set(qr.Low, v) }),
+			s.checkboxInput("medium", levels.has(qr.Medium), func(v bool) { levels.set(qr.Medium, v) }),
+			s.checkboxInput("high", levels.has(qr.High), func(v bool) { levels.set(qr.High, v) }),
+			s.checkboxInput("highest", levels.has(qr.Highest), func(v bool) { levels.set(qr.Highest, v) }),
 		),
 	)
 }
 
-func checkboxInput(name string, val bool) vecty.ComponentOrHTML {
+func (s *Settings) checkboxInput(name string, val bool, check func(bool)) vecty.ComponentOrHTML {
 	return elem.Div(
 		vecty.Markup(
 			vecty.Class("control"),
@@ -150,6 +190,14 @@ func checkboxInput(name string, val bool) vecty.ComponentOrHTML {
 					vecty.MarkupIf(val,
 						vecty.Attribute("checked", "true"),
 					),
+
+					event.Change(func(event *vecty.Event) {
+						v := event.Target.Get("checked").Bool()
+						fmt.Println("check", v)
+
+						check(v)
+						vecty.Rerender(s)
+					}),
 				),
 			),
 			vecty.Text(name),
@@ -160,7 +208,7 @@ func checkboxInput(name string, val bool) vecty.ComponentOrHTML {
 func (s *Settings) hint() vecty.ComponentOrHTML {
 	nChunks := (s.config.StopSize - s.config.StartSize) / s.config.SizeStep
 	nFPS := s.config.StopFPS - s.config.StartFPS
-	numberOfTests := len(s.config.Levels) * nFPS * nChunks
+	numberOfTests := s.config.Levels.numEnabled() * nFPS * nChunks
 	text := fmt.Sprintf("This will run %d tests", numberOfTests)
 	return elem.Div(
 		vecty.Markup(

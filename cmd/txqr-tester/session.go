@@ -48,14 +48,21 @@ func DefaultSessionConfig() SessionConfig {
 		StopSize:  1000,
 		SizeStep:  50,
 
-		Levels: AllQRLevels,
+		Levels: DefaultQRLevels,
 	}
 }
 
 // Levels is a handy wrapper type to work with a slice of RecoveryLevels.
-type Levels []qr.RecoveryLevel
+type Levels map[qr.RecoveryLevel]bool
 
-var AllQRLevels = Levels{
+var DefaultQRLevels = map[qr.RecoveryLevel]bool{
+	qr.Low:     true,
+	qr.Medium:  true,
+	qr.High:    true,
+	qr.Highest: true,
+}
+
+var AllQRLevels = []qr.RecoveryLevel{
 	qr.Low,
 	qr.Medium,
 	qr.High,
@@ -63,10 +70,20 @@ var AllQRLevels = Levels{
 }
 
 func (levels Levels) has(lvl qr.RecoveryLevel) bool {
-	for _, l := range levels {
-		if l == lvl {
-			return true
+	return levels[lvl]
+}
+
+func (levels Levels) set(lvl qr.RecoveryLevel, val bool) {
+	levels[lvl] = val
+}
+
+// numEnabled returns number of enabled levels.
+func (levels Levels) numEnabled() int {
+	var ret int
+	for _, v := range levels {
+		if v {
+			ret++
 		}
 	}
-	return false
+	return ret
 }
