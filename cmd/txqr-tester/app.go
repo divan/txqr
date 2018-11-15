@@ -10,13 +10,15 @@ import (
 type App struct {
 	vecty.Core
 
-	session *Session
+	session  *Session
+	settings *Settings
 }
 
 // NewApp creates and inits new app page.
 func NewApp() *App {
 	app := &App{
-		session: NewSession(),
+		session:  NewSession(),
+		settings: NewSettings(),
 	}
 
 	return app
@@ -36,7 +38,6 @@ func (a *App) Render() vecty.ComponentOrHTML {
 					vecty.Class("column", "is-half"),
 				),
 				elem.Div(
-					// TODO
 					vecty.If(a.session.state == StateNew,
 						a.StartQR()),
 				),
@@ -47,8 +48,7 @@ func (a *App) Render() vecty.ComponentOrHTML {
 					vecty.Class("column", "is-half"),
 				),
 				elem.Div(
-					// TODO
-					elem.Heading1(vecty.Text("Right")),
+					a.settings,
 				),
 			),
 		),
