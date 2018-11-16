@@ -71,6 +71,11 @@ func (s *Session) State() SessionState {
 	return s.state
 }
 
+// InProgress returns true if testing is in progress.
+func (s *Session) InProgress() bool {
+	return s.state != StateNew && s.state != StateFinished
+}
+
 func (s *Session) generateTestsSetup() []*testSetup {
 	var ret []*testSetup
 	for _, lvl := range AllQRLevels {

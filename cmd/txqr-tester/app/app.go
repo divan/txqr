@@ -66,17 +66,12 @@ func (a *App) Render() vecty.ComponentOrHTML {
 				vecty.Markup(
 					vecty.Class("column", "is-half"),
 				),
-				elem.Div(
-					vecty.Markup(
-						// TODO(divan): make it really disabled/greyed out
-						vecty.MarkupIf(a.session.State() != StateNew,
-							vecty.Attribute("disabled", true),
-						),
-					),
+				vecty.If(!a.session.InProgress(), elem.Div(
 					a.settings,
-				),
-				elem.HorizontalRule(),
-				a.resultsTable,
+				)),
+				vecty.If(a.session.InProgress(), elem.Div(
+					a.resultsTable,
+				)),
 			),
 		),
 		vecty.Markup(
