@@ -36,7 +36,6 @@ func (s *Settings) Render() vecty.ComponentOrHTML {
 			),
 			vecty.Text("Settings"),
 		),
-		elem.HorizontalRule(),
 		s.chunkSizesRow(),
 		s.fpsRow(),
 		s.recoveryLevelsRow(),

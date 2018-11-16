@@ -16,8 +16,9 @@ import (
 type App struct {
 	vecty.Core
 
-	session  *Session
-	settings *Settings
+	session      *Session
+	settings     *Settings
+	resultsTable *ResultsTable
 
 	ws *WSClient
 
@@ -32,9 +33,10 @@ func NewApp() *App {
 	wsAddress := js.Global.Get("WSAddress").String()
 	fmt.Println("WSaddress:", wsAddress)
 	app := &App{
-		session:  NewSession(),
-		settings: NewSettings(),
-		testData: newTestData(),
+		session:      NewSession(),
+		settings:     NewSettings(),
+		resultsTable: NewResultsTable(),
+		testData:     newTestData(),
 	}
 
 	app.ws = NewWSClient(wsAddress, app)
@@ -65,8 +67,16 @@ func (a *App) Render() vecty.ComponentOrHTML {
 					vecty.Class("column", "is-half"),
 				),
 				elem.Div(
+					vecty.Markup(
+						// TODO(divan): make it really disabled/greyed out
+						vecty.MarkupIf(a.session.State() != StateNew,
+							vecty.Attribute("disabled", true),
+						),
+					),
 					a.settings,
 				),
+				elem.HorizontalRule(),
+				a.resultsTable,
 			),
 		),
 		vecty.Markup(
