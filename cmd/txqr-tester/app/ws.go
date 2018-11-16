@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"time"
 
 	"github.com/divan/txqr/cmd/txqr-tester/ws"
 	"github.com/gopherjs/websocket"
@@ -69,7 +70,10 @@ func (w *WSClient) processWSCommand(data []byte) {
 		w.app.ShowNext()
 	case ws.CmdResult:
 		log.Println("Got result")
-		// process result
+		res := Result{
+			Duration: time.Duration(msg.Duration) * time.Millisecond,
+		}
+		w.app.ProcessResult(res)
 	default:
 		log.Printf("[ERROR] Invalid message '%s', ignoring", msg.Cmd)
 	}

@@ -8,8 +8,9 @@ type (
 
 	// UIRequest is a WebSocket UI request definition.
 	UIRequest struct {
-		Cmd    UICommand `json:"cmd"`
-		Device string    `json:"device,omitempty"`
+		Cmd      UICommand `json:"cmd"`
+		Device   string    `json:"device,omitempty"`
+		Duration int64     `json:"duration,omitempty"` // time in ms
 	}
 
 	// UICommand defines client commands.

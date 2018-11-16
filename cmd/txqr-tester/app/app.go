@@ -98,6 +98,7 @@ func (a *App) SetConnected(val bool) {
 	vecty.Rerender(a)
 }
 
+// ShowNext handles request to show next animated QR.
 func (a *App) ShowNext() {
 	setup, _ := a.session.StartNext()
 	log.Println("Creating animated gif for", setup)
@@ -121,4 +122,12 @@ func newTestData() []byte {
 		log.Println("[ERROR] Can't generate rand data: %v", err)
 	}
 	return data
+}
+
+// ProcessResult handles request to process new incoming result.
+func (a *App) ProcessResult(res Result) {
+	log.Println("Duration was:", res.Duration)
+
+	a.session.SetState(StateWaitingNext)
+	vecty.Rerender(a)
 }
