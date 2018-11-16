@@ -32,13 +32,19 @@ func NewSession() *Session {
 	}
 }
 
+// CurrentSetup returns the test setup of the currently executing round.
 func (s *Session) CurrentSetup() testSetup {
 	if s.state == StateNew || s.state == StateFinished {
 		return testSetup{}
 	}
 
-	ts := s.tests[s.idx]
+	ts := s.tests[s.idx-1]
 	return *ts
+}
+
+// UpdateConfig sets the new config for the session.
+func (s *Session) UpdateConfig(config SessionConfig) {
+	s.config = config
 }
 
 // StartNext starts next round of testing. It returns
@@ -82,8 +88,8 @@ func (s *Session) generateTestsSetup() []*testSetup {
 		if s.config.Levels[lvl] == false {
 			continue
 		}
-		for fps := s.config.StartFPS; fps < s.config.StopFPS; fps++ {
-			for sz := s.config.StartSize; sz < s.config.StopSize; sz += s.config.SizeStep {
+		for fps := s.config.StartFPS; fps <= s.config.StopFPS; fps++ {
+			for sz := s.config.StartSize; sz <= s.config.StopSize; sz += s.config.SizeStep {
 				ret = append(ret, newTestSetup(fps, sz, lvl))
 			}
 		}

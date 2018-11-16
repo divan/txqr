@@ -68,12 +68,14 @@ func (w *WSClient) processWSCommand(data []byte) {
 	case ws.CmdStartNext:
 		log.Println("Got start_nextx")
 		w.app.ShowNext()
+		w.sendMsg(&ws.UIResponse{Type: ws.Ack})
 	case ws.CmdResult:
 		log.Println("Got result")
 		dur := time.Duration(msg.Duration) * time.Millisecond
 		setup := w.app.session.CurrentSetup()
 		res := NewResult(setup, dur)
 		w.app.ProcessResult(res)
+		w.sendMsg(&ws.UIResponse{Type: ws.Ack})
 	default:
 		log.Printf("[ERROR] Invalid message '%s', ignoring", msg.Cmd)
 	}

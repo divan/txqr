@@ -50,7 +50,7 @@ func (ws *WSBridge) handleFirstClient() {
 	for {
 		mt, message, err := ws.first.ReadMessage()
 		if err != nil {
-			log.Println("[ERROR] Read:", err)
+			log.Println("[ERROR] Read first:", err)
 			break
 		}
 		if ws.second == nil {
@@ -60,7 +60,7 @@ func (ws *WSBridge) handleFirstClient() {
 		}
 		err = ws.second.WriteMessage(mt, message)
 		if err != nil {
-			log.Println("[ERROR] Write:", err)
+			log.Println("[ERROR] Write second:", err)
 			return
 		}
 	}
@@ -70,7 +70,7 @@ func (ws *WSBridge) handleSecondClient() {
 	for {
 		mt, message, err := ws.second.ReadMessage()
 		if err != nil {
-			log.Println("[ERROR] Read:", err)
+			log.Println("[ERROR] Read second:", err)
 			break
 		}
 		if ws.first == nil {
@@ -80,7 +80,7 @@ func (ws *WSBridge) handleSecondClient() {
 		}
 		err = ws.first.WriteMessage(mt, message)
 		if err != nil {
-			log.Println("[ERROR] Write:", err)
+			log.Println("[ERROR] Write first:", err)
 			return
 		}
 	}

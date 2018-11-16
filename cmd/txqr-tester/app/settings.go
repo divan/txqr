@@ -43,6 +43,11 @@ func (s *Settings) Render() vecty.ComponentOrHTML {
 	)
 }
 
+// Config returns current configuration.
+func (s *Settings) Config() SessionConfig {
+	return s.config
+}
+
 func (s *Settings) chunkSizesRow() vecty.ComponentOrHTML {
 	return elem.Div(
 		vecty.Markup(
@@ -205,8 +210,8 @@ func (s *Settings) checkboxInput(name string, val bool, check func(bool)) vecty.
 }
 
 func (s *Settings) hint() vecty.ComponentOrHTML {
-	nChunks := (s.config.StopSize - s.config.StartSize) / s.config.SizeStep
-	nFPS := s.config.StopFPS - s.config.StartFPS
+	nChunks := (s.config.StopSize-s.config.StartSize)/s.config.SizeStep + 1
+	nFPS := s.config.StopFPS - s.config.StartFPS + 1
 	numberOfTests := s.config.Levels.numEnabled() * nFPS * nChunks
 	text := fmt.Sprintf("This will run %d tests", numberOfTests)
 	return elem.Div(

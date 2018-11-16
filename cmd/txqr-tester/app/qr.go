@@ -28,8 +28,9 @@ func (a *App) QR() vecty.ComponentOrHTML {
 					vecty.Markup(
 						vecty.Class("has-text-weight-bold"),
 					),
+					vecty.If(state == StateFinished, vecty.Text("Test completed")),
 					vecty.If(!a.connected, vecty.Text("Scan QR code to connect")),
-					vecty.If(a.connected && !a.session.InProgress() && state != StateAnimating, vecty.Text("Scan QR code for next test")),
+					vecty.If(a.connected && !a.session.InProgress() && state != StateAnimating && state != StateFinished, vecty.Text("Scan QR code for next test")),
 					vecty.If(a.connected && state == StateAnimating, vecty.Text("Sending data via QR...")),
 				),
 			),
@@ -56,13 +57,23 @@ func (a *App) QR() vecty.ComponentOrHTML {
 					),
 				),
 			),
-			vecty.If(a.connected,
+			vecty.If(a.connected && state != StateFinished,
 				elem.Paragraph(
 					vecty.Markup(
 						vecty.Class("card-footer-item", "has-background-success", "has-text-white", "has-text-weight-bold"),
 					),
 					vecty.Text(
 						fmt.Sprintf("Connected"),
+					),
+				),
+			),
+			vecty.If(state == StateFinished,
+				elem.Paragraph(
+					vecty.Markup(
+						vecty.Class("card-footer-item", "has-background-primary", "has-text-white", "has-text-weight-bold"),
+					),
+					vecty.Text(
+						fmt.Sprintf("Finished"),
 					),
 				),
 			),

@@ -67,10 +67,10 @@ func (a *App) Render() vecty.ComponentOrHTML {
 				vecty.Markup(
 					vecty.Class("column", "is-half"),
 				),
-				vecty.If(!a.session.InProgress(), elem.Div(
+				vecty.If(!a.session.InProgress() && a.session.State() != StateFinished, elem.Div(
 					a.settings,
 				)),
-				vecty.If(a.session.InProgress(), elem.Div(
+				vecty.If(a.session.InProgress() || a.session.State() == StateFinished, elem.Div(
 					a.resultsTable,
 				)),
 			),
@@ -106,10 +106,20 @@ func (a *App) SetConnected(val bool) {
 
 // ShowNext handles request to show next animated QR.
 func (a *App) ShowNext() {
+	if a.session.State() == StateNew {
+		a.session.UpdateConfig(a.settings.Config())
+	}
+
+	setup, ok := a.session.StartNext()
+	if !ok {
+		vecty.Rerender(a)
+		return
+	}
+
 	a.generatingQR = true
 	vecty.Rerender(a)
-	time.Sleep(100 * time.Millisecond) // wait till JS thread pickup rerender before running heavy computaiton. withoit this delay it'll never rerender
-	setup, _ := a.session.StartNext()
+	time.Sleep(100 * time.Millisecond) // wait till JS thread pickup rerender before running heavy computaiton. without this delay it'll never rerender
+
 	log.Println("Creating animated gif for", setup)
 	now := time.Now()
 	gif, err := AnimatedGif(a.testData, 500, setup)
@@ -117,10 +127,12 @@ func (a *App) ShowNext() {
 		log.Println("[ERROR] Can't generate gif: %v", err)
 		// TODO: session abort
 		a.generatingQR = false
+		vecty.Rerender(a)
 		return
 	}
 	log.Println("Took time:", time.Since(now))
 	a.animatingQR = gif
+
 	a.session.SetState(StateAnimating)
 	a.generatingQR = false
 	vecty.Rerender(a)
