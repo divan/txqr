@@ -43,7 +43,7 @@ func AnimatedGif(data []byte, imgSize int, setup *testSetup) ([]byte, error) {
 // delay value, which is in 100th of second
 func fpsToGifDelay(fps int) int {
 	if fps == 0 {
-		return 10 // default value, 1 sec
+		return 100 // default value, 1 sec
 	}
-	return 10 / fps
+	return 100 / fps
 }
