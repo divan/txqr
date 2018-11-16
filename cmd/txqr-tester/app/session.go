@@ -32,6 +32,15 @@ func NewSession() *Session {
 	}
 }
 
+func (s *Session) CurrentSetup() testSetup {
+	if s.state == StateNew || s.state == StateFinished {
+		return testSetup{}
+	}
+
+	ts := s.tests[s.idx]
+	return *ts
+}
+
 // StartNext starts next round of testing. It returns
 // next untested parameters for QR code.
 func (s *Session) StartNext() (*testSetup, bool) {

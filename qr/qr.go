@@ -50,3 +50,19 @@ func Decode(img image.Image) (string, error) {
 	}
 	return result.GetText(), nil
 }
+
+// String implements Stringer interface.
+func (r RecoveryLevel) String() string {
+	switch r {
+	case Low:
+		return "Low"
+	case Medium:
+		return "Medium"
+	case High:
+		return "High"
+	case Highest:
+		return "Highest"
+	default:
+		return "N/A"
+	}
+}

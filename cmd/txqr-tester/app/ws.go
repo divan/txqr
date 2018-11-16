@@ -70,9 +70,9 @@ func (w *WSClient) processWSCommand(data []byte) {
 		w.app.ShowNext()
 	case ws.CmdResult:
 		log.Println("Got result")
-		res := Result{
-			Duration: time.Duration(msg.Duration) * time.Millisecond,
-		}
+		dur := time.Duration(msg.Duration) * time.Millisecond
+		setup := w.app.session.CurrentSetup()
+		res := NewResult(setup, dur)
 		w.app.ProcessResult(res)
 	default:
 		log.Printf("[ERROR] Invalid message '%s', ignoring", msg.Cmd)

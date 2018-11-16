@@ -139,5 +139,6 @@ func (a *App) ProcessResult(res Result) {
 	log.Println("Duration was:", res.Duration)
 
 	a.session.SetState(StateWaitingNext)
+	a.resultsTable.AddResult(res)
 	vecty.Rerender(a)
 }

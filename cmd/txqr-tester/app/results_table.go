@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gopherjs/vecty"
 	"github.com/gopherjs/vecty/elem"
 )
@@ -30,12 +32,18 @@ func (r *ResultsTable) Render() vecty.ComponentOrHTML {
 	)
 }
 
+func (r *ResultsTable) AddResult(res Result) {
+	r.results = append(r.results, res)
+	vecty.Rerender(r)
+}
+
 func (r *ResultsTable) table() vecty.ComponentOrHTML {
 	return elem.Table(
 		vecty.Markup(
 			vecty.Class("table", "is-fullwidth"),
 		),
 		r.thead(),
+		r.tresults(),
 	)
 }
 
@@ -47,5 +55,22 @@ func (r *ResultsTable) thead() vecty.ComponentOrHTML {
 			elem.TableHeader(vecty.Text("Chunk size")),
 			elem.TableHeader(vecty.Text("Result")),
 		),
+	)
+}
+
+func (r *ResultsTable) tresults() vecty.ComponentOrHTML {
+	rows := make([]vecty.MarkupOrChild, len(r.results))
+	for _, res := range r.results {
+		rows = append(rows, tableRow(res))
+	}
+	return elem.TableBody(rows...)
+}
+
+func tableRow(r Result) *vecty.HTML {
+	return elem.TableRow(
+		elem.TableData(vecty.Text(fmt.Sprintf("%s", r.lvl))),
+		elem.TableData(vecty.Text(fmt.Sprintf("%d", r.fps))),
+		elem.TableData(vecty.Text(fmt.Sprintf("%d", r.size))),
+		elem.TableData(vecty.Text(fmt.Sprintf("%s", r.Duration))),
 	)
 }
