@@ -9,7 +9,8 @@ type SessionState int
 const (
 	StateNew SessionState = iota // default state
 	StateStarted
-	StatePaused
+	StateAnimating
+	StateWaitingNext
 	StateFinished
 	StateFailed
 )
@@ -51,6 +52,16 @@ func (s *Session) StartNext() (*testSetup, bool) {
 	return test, true
 }
 
+// SetState explicitly sets the session state to state.
+func (s *Session) SetState(state SessionState) {
+	s.state = state
+}
+
+// State returns the current state of Session.
+func (s *Session) State() SessionState {
+	return s.state
+}
+
 func (s *Session) generateTestsSetup() []*testSetup {
 	var ret []*testSetup
 	for _, lvl := range AllQRLevels {
@@ -68,16 +79,16 @@ func (s *Session) generateTestsSetup() []*testSetup {
 
 // testSetup represents setup parameters for the single test round.
 type testSetup struct {
-	FPS   int
-	Size  int
-	Level qr.RecoveryLevel
+	fps  int
+	size int
+	lvl  qr.RecoveryLevel
 }
 
 func newTestSetup(fps, sz int, lvl qr.RecoveryLevel) *testSetup {
 	return &testSetup{
-		FPS:   fps,
-		Size:  sz,
-		Level: lvl,
+		fps:  fps,
+		size: sz,
+		lvl:  lvl,
 	}
 }
 

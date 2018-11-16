@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"math/rand"
+	"time"
 
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/vecty"
@@ -19,6 +22,9 @@ type App struct {
 	ws *WSClient
 
 	connected bool
+
+	testData    []byte
+	animatingQR []byte
 }
 
 // NewApp creates and inits new app page.
@@ -28,6 +34,7 @@ func NewApp() *App {
 	app := &App{
 		session:  NewSession(),
 		settings: NewSettings(),
+		testData: newTestData(),
 	}
 
 	app.ws = NewWSClient(wsAddress, app)
@@ -50,10 +57,7 @@ func (a *App) Render() vecty.ComponentOrHTML {
 				vecty.Markup(
 					vecty.Class("column", "is-half"),
 				),
-				elem.Div(
-					vecty.If(a.session.state == StateNew,
-						a.QR()),
-				),
+				elem.Div(a.QR()),
 			),
 			// Right half
 			elem.Div(
@@ -88,7 +92,33 @@ func (a *App) header() *vecty.HTML {
 	)
 }
 
+// SetConnected changes the connected status on UI.
 func (a *App) SetConnected(val bool) {
 	a.connected = val
 	vecty.Rerender(a)
+}
+
+func (a *App) ShowNext() {
+	setup, _ := a.session.StartNext()
+	log.Println("Creating animated gif for", setup)
+	now := time.Now()
+	gif, err := AnimatedGif(a.testData, 500, setup)
+	if err != nil {
+		log.Println("[ERROR] Can't generate gif: %v", err)
+		// TODO: session abort
+		return
+	}
+	log.Println("Took time:", time.Since(now))
+	a.animatingQR = gif
+	a.session.SetState(StateAnimating)
+	vecty.Rerender(a)
+}
+
+func newTestData() []byte {
+	data := make([]byte, 1024)
+	_, err := rand.Read(data)
+	if err != nil {
+		log.Println("[ERROR] Can't generate rand data: %v", err)
+	}
+	return data
 }

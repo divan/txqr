@@ -36,7 +36,7 @@ func (a *App) QR() vecty.ComponentOrHTML {
 				vecty.Class("card-image", "has-text-centered"),
 			),
 			vecty.If(!a.connected, a.startQR()),
-			vecty.If(a.connected, a.syncQR()),
+			vecty.If(a.connected, a.mainQR()),
 		),
 
 		elem.Footer(
@@ -71,8 +71,14 @@ func (a *App) startQR() vecty.ComponentOrHTML {
 	return renderQR(a.ws.address)
 }
 
-func (a *App) syncQR() vecty.ComponentOrHTML {
-	return renderQR("nextRound")
+func (a *App) mainQR() vecty.ComponentOrHTML {
+	state := a.session.State()
+	if state == StateAnimating {
+		return renderGIF(a.animatingQR)
+	} else if state == StateStarted || state == StateWaitingNext || state == StateNew {
+		return renderQR("nextRound")
+	}
+	return elem.Div()
 }
 
 func renderQR(text string) vecty.ComponentOrHTML {
@@ -81,5 +87,5 @@ func renderQR(text string) vecty.ComponentOrHTML {
 		// TODO(divan): display the error nicely (why this can even happen?)
 		return elem.Div(vecty.Text(fmt.Sprintf("qr error: %v", err)))
 	}
-	return renderImage(img)
+	return renderPNG(img)
 }

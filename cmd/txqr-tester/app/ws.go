@@ -66,9 +66,7 @@ func (w *WSClient) processWSCommand(data []byte) {
 		w.sendMsg(&ws.UIResponse{Type: ws.Ack})
 	case ws.CmdStartNext:
 		log.Println("Got start_nextx")
-		setup, _ := w.app.session.StartNext()
-		log.Println("Config:", setup)
-		// start animation
+		w.app.ShowNext()
 	case ws.CmdResult:
 		log.Println("Got result")
 		// process result
