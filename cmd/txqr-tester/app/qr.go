@@ -10,6 +10,7 @@ import (
 
 // QR renders the QR code with accopmanying text.
 func (a *App) QR() vecty.ComponentOrHTML {
+	state := a.session.State()
 	return elem.Div(
 		vecty.Markup(
 			vecty.Class("card"),
@@ -27,7 +28,8 @@ func (a *App) QR() vecty.ComponentOrHTML {
 						vecty.Class("has-text-weight-bold"),
 					),
 					vecty.If(!a.connected, vecty.Text("Scan QR code to connect")),
-					vecty.If(a.connected, vecty.Text("Scan QR code to start testing")),
+					vecty.If(a.connected && (state == StateNew || state == StateWaitingNext), vecty.Text("Scan QR code to start testing")),
+					vecty.If(a.connected && state == StateAnimating, vecty.Text("Sending data via QR...")),
 				),
 			),
 		),
