@@ -39,7 +39,7 @@ func StartApp(bind string) error {
 		handler(w, r, info)
 	})
 	http.Handle("/", redirectToIndex(http.FileServer(assetFS())))
-	http.HandleFunc("/ws", NewWSServer().Handle)
+	http.HandleFunc("/ws", NewWSBridge().Handle)
 	go StartBrowser("http://localhost" + bind)
 
 	return http.ListenAndServe(bind, nil)

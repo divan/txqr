@@ -16,7 +16,9 @@ type App struct {
 	session  *Session
 	settings *Settings
 
-	wsAddress string
+	ws *WSClient
+
+	connected bool
 }
 
 // NewApp creates and inits new app page.
@@ -24,10 +26,13 @@ func NewApp() *App {
 	wsAddress := js.Global.Get("WSAddress").String()
 	fmt.Println("WSaddress:", wsAddress)
 	app := &App{
-		session:   NewSession(),
-		settings:  NewSettings(),
-		wsAddress: wsAddress,
+		session:  NewSession(),
+		settings: NewSettings(),
 	}
+
+	app.ws = NewWSClient(wsAddress, app)
+
+	go app.ws.talkToBackend()
 
 	return app
 }
@@ -81,4 +86,9 @@ func (a *App) header() *vecty.HTML {
 			vecty.Text("Run TQXR Reader app on your smartphone and point to the QR code to start testing."),
 		),
 	)
+}
+
+func (a *App) SetConnected(val bool) {
+	a.connected = val
+	vecty.Rerender(a)
 }

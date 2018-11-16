@@ -11,7 +11,7 @@ import (
 // StartQR renders the QR code with information needed to start
 // a new testing from smartphone.
 func (a *App) StartQR() vecty.ComponentOrHTML {
-	img, err := qr.Encode(a.wsAddress, 500, qr.Medium)
+	img, err := qr.Encode(a.ws.address, 500, qr.Medium)
 	if err != nil {
 		// TODO(divan): display the error nicely (why this can even happen?)
 		return elem.Div(vecty.Text(fmt.Sprintf("qr error: %v", err)))
@@ -47,12 +47,24 @@ func (a *App) StartQR() vecty.ComponentOrHTML {
 			vecty.Markup(
 				vecty.Class("card-footer"),
 			),
-			elem.Paragraph(
-				vecty.Markup(
-					vecty.Class("card-footer-item"),
+			vecty.If(!a.connected,
+				elem.Paragraph(
+					vecty.Markup(
+						vecty.Class("card-footer-item"),
+					),
+					vecty.Text(
+						fmt.Sprintf("Started WS server on: %s", a.ws.address),
+					),
 				),
-				vecty.Text(
-					fmt.Sprintf("Started WS server on: %s", a.wsAddress),
+			),
+			vecty.If(a.connected,
+				elem.Paragraph(
+					vecty.Markup(
+						vecty.Class("card-footer-item"),
+					),
+					vecty.Text(
+						fmt.Sprintf("Connected"),
+					),
 				),
 			),
 		),
