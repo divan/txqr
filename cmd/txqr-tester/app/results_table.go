@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
-	"io"
-	"time"
 
 	"github.com/gopherjs/vecty"
 	"github.com/gopherjs/vecty/elem"
@@ -49,39 +46,6 @@ func (r *ResultsTable) AddResult(res Result) {
 	vecty.Rerender(r)
 }
 
-// csv returns two-dimensional slice of prepared strings,
-// to be used with encoding/csv package.
-func (r *ResultsTable) csv() [][]string {
-	ret := [][]string{}
-	row := []string{"QR Level", "FPS", "Chunk Size", "Duration (ms)"}
-	ret = append(ret, row)
-	for _, result := range r.results {
-		lvl := fmt.Sprintf("%s", result.lvl)
-		fps := fmt.Sprintf("%d", result.fps)
-		sz := fmt.Sprintf("%d", result.size)
-		dur := fmt.Sprintf("%d", result.Duration*time.Millisecond)
-		row := []string{lvl, fps, sz, dur}
-		ret = append(ret, row)
-	}
-	return ret
-}
-
-// WriteAsCSV writes results into io.Writer in CSV format.
-func (r *ResultsTable) WriteAsCSV(w io.Writer) error {
-	cw := csv.NewWriter(w)
-	for _, row := range r.csv() {
-		err := cw.Write(row)
-		if err != nil {
-			return fmt.Errorf("write csv: %v", err)
-		}
-	}
-	cw.Flush()
-	if err := cw.Error(); err != nil {
-		return fmt.Errorf("write csv: %v", err)
-	}
-	return nil
-}
-
 func (r *ResultsTable) table() vecty.ComponentOrHTML {
 	return elem.Table(
 		vecty.Markup(
@@ -121,9 +85,11 @@ func tableRow(r Result) *vecty.HTML {
 }
 
 func (r *ResultsTable) csvButton() *vecty.HTML {
-	return elem.Button(
+	return elem.Anchor(
 		vecty.Markup(
 			vecty.Class("button", "is-success"),
+			vecty.Attribute("href", r.csvDataURI()),
+			vecty.Attribute("download", "test_results.csv"),
 		),
 		vecty.Text("Download CSV"),
 	)
