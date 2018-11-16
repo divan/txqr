@@ -26,9 +26,8 @@ func NewApp() *App {
 	wsAddress := js.Global.Get("WSAddress").String()
 	fmt.Println("WSaddress:", wsAddress)
 	app := &App{
-		session:   NewSession(),
-		settings:  NewSettings(),
-		connected: false,
+		session:  NewSession(),
+		settings: NewSettings(),
 	}
 
 	app.ws = NewWSClient(wsAddress, app)
@@ -53,7 +52,7 @@ func (a *App) Render() vecty.ComponentOrHTML {
 				),
 				elem.Div(
 					vecty.If(a.session.state == StateNew,
-						a.StartQR()),
+						a.QR()),
 				),
 			),
 			// Right half

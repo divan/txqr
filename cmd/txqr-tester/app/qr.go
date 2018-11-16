@@ -8,14 +8,8 @@ import (
 	"github.com/gopherjs/vecty/elem"
 )
 
-// StartQR renders the QR code with information needed to start
-// a new testing from smartphone.
-func (a *App) StartQR() vecty.ComponentOrHTML {
-	img, err := qr.Encode(a.ws.address, 500, qr.Medium)
-	if err != nil {
-		// TODO(divan): display the error nicely (why this can even happen?)
-		return elem.Div(vecty.Text(fmt.Sprintf("qr error: %v", err)))
-	}
+// QR renders the QR code with accopmanying text.
+func (a *App) QR() vecty.ComponentOrHTML {
 	return elem.Div(
 		vecty.Markup(
 			vecty.Class("card"),
@@ -41,7 +35,8 @@ func (a *App) StartQR() vecty.ComponentOrHTML {
 			vecty.Markup(
 				vecty.Class("card-image", "has-text-centered"),
 			),
-			renderImage(img),
+			vecty.If(!a.connected, a.startQR()),
+			vecty.If(a.connected, a.syncQR()),
 		),
 
 		elem.Footer(
@@ -70,4 +65,21 @@ func (a *App) StartQR() vecty.ComponentOrHTML {
 			),
 		),
 	)
+}
+
+func (a *App) startQR() vecty.ComponentOrHTML {
+	return renderQR(a.ws.address)
+}
+
+func (a *App) syncQR() vecty.ComponentOrHTML {
+	return renderQR("nextRound")
+}
+
+func renderQR(text string) vecty.ComponentOrHTML {
+	img, err := qr.Encode(text, 500, qr.Medium)
+	if err != nil {
+		// TODO(divan): display the error nicely (why this can even happen?)
+		return elem.Div(vecty.Text(fmt.Sprintf("qr error: %v", err)))
+	}
+	return renderImage(img)
 }
