@@ -28,7 +28,7 @@ func (a *App) QR() vecty.ComponentOrHTML {
 						vecty.Class("has-text-weight-bold"),
 					),
 					vecty.If(!a.connected, vecty.Text("Scan QR code to connect")),
-					vecty.If(a.connected && (state == StateNew || state == StateWaitingNext), vecty.Text("Scan QR code to start testing")),
+					vecty.If(a.connected && !a.session.InProgress() && state != StateAnimating, vecty.Text("Scan QR code for next test")),
 					vecty.If(a.connected && state == StateAnimating, vecty.Text("Sending data via QR...")),
 				),
 			),
