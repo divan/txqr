@@ -42,7 +42,7 @@ func (w *WSClient) talkToBackend() {
 		buf := make([]byte, 1024)
 		n, err := conn.Read(buf)
 		if err != nil {
-			log.Println("[ERROR] Reading from websocket: %v", err)
+			log.Printf("[ERROR] Reading from websocket: %v", err)
 			break
 		}
 
@@ -65,7 +65,9 @@ func (w *WSClient) processWSCommand(data []byte) {
 		w.app.SetConnected(true)
 		w.sendMsg(&ws.UIResponse{Type: ws.Ack})
 	case ws.CmdStartNext:
-		log.Println("Got start_next")
+		log.Println("Got start_nextx")
+		setup, _ := w.app.session.StartNext()
+		log.Println("Config:", setup)
 		// start animation
 	case ws.CmdResult:
 		log.Println("Got result")

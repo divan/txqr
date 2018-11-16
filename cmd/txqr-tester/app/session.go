@@ -18,6 +18,9 @@ const (
 type Session struct {
 	state  SessionState
 	config SessionConfig
+
+	tests []*testSetup
+	idx   int // current test index
 }
 
 // NewSession inits new test session.
@@ -25,6 +28,56 @@ type Session struct {
 func NewSession() *Session {
 	return &Session{
 		config: DefaultSessionConfig(),
+	}
+}
+
+// StartNext starts next round of testing. It returns
+// next untested parameters for QR code.
+func (s *Session) StartNext() (*testSetup, bool) {
+	if s.state == StateNew {
+		s.state = StateStarted
+
+		// generate parameters set, so they can't be changed during test
+		s.tests = s.generateTestsSetup()
+	}
+
+	if s.idx == len(s.tests) {
+		s.state = StateFinished
+		return nil, false
+	}
+
+	test := s.tests[s.idx]
+	s.idx++
+	return test, true
+}
+
+func (s *Session) generateTestsSetup() []*testSetup {
+	var ret []*testSetup
+	for _, lvl := range AllQRLevels {
+		if s.config.Levels[lvl] == false {
+			continue
+		}
+		for fps := s.config.StartFPS; fps < s.config.StopFPS; fps++ {
+			for sz := s.config.StartSize; sz < s.config.StopSize; sz += s.config.SizeStep {
+				ret = append(ret, newTestSetup(fps, sz, lvl))
+			}
+		}
+	}
+	return ret
+}
+
+// testSetup represents setup parameters for the single test round.
+type testSetup struct {
+	FPS   int
+	Size  int
+	Level qr.RecoveryLevel
+}
+
+func newTestSetup(fps, sz int, lvl qr.RecoveryLevel) *testSetup {
+	return &testSetup{
+		FPS:   fps,
+		Size:  sz,
+		Level: lvl,
 	}
 }
 
