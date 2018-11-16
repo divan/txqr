@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/divan/txqr/qr"
 	"github.com/gopherjs/vecty"
@@ -75,6 +76,12 @@ func (a *App) startQR() vecty.ComponentOrHTML {
 
 func (a *App) mainQR() vecty.ComponentOrHTML {
 	state := a.session.State()
+
+	log.Println("MainQR: generatingQR", a.generatingQR)
+	if a.generatingQR {
+		return loader()
+	}
+
 	if state == StateAnimating {
 		return renderGIF(a.animatingQR)
 	} else if state == StateStarted || state == StateWaitingNext || state == StateNew {

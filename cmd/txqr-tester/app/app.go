@@ -24,8 +24,9 @@ type App struct {
 
 	connected bool
 
-	testData    []byte
-	animatingQR []byte
+	testData     []byte
+	animatingQR  []byte
+	generatingQR bool
 }
 
 // NewApp creates and inits new app page.
@@ -105,6 +106,9 @@ func (a *App) SetConnected(val bool) {
 
 // ShowNext handles request to show next animated QR.
 func (a *App) ShowNext() {
+	a.generatingQR = true
+	vecty.Rerender(a)
+	time.Sleep(100 * time.Millisecond) // wait till JS thread pickup rerender before running heavy computaiton. withoit this delay it'll never rerender
 	setup, _ := a.session.StartNext()
 	log.Println("Creating animated gif for", setup)
 	now := time.Now()
@@ -112,11 +116,13 @@ func (a *App) ShowNext() {
 	if err != nil {
 		log.Println("[ERROR] Can't generate gif: %v", err)
 		// TODO: session abort
+		a.generatingQR = false
 		return
 	}
 	log.Println("Took time:", time.Since(now))
 	a.animatingQR = gif
 	a.session.SetState(StateAnimating)
+	a.generatingQR = false
 	vecty.Rerender(a)
 }
 
