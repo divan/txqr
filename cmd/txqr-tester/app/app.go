@@ -26,8 +26,9 @@ func NewApp() *App {
 	wsAddress := js.Global.Get("WSAddress").String()
 	fmt.Println("WSaddress:", wsAddress)
 	app := &App{
-		session:  NewSession(),
-		settings: NewSettings(),
+		session:   NewSession(),
+		settings:  NewSettings(),
+		connected: false,
 	}
 
 	app.ws = NewWSClient(wsAddress, app)

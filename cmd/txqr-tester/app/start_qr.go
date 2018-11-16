@@ -32,7 +32,8 @@ func (a *App) StartQR() vecty.ComponentOrHTML {
 					vecty.Markup(
 						vecty.Class("has-text-weight-bold"),
 					),
-					vecty.Text("Scan QR code to start testing"),
+					vecty.If(!a.connected, vecty.Text("Scan QR code to connect")),
+					vecty.If(a.connected, vecty.Text("Scan QR code to start testing")),
 				),
 			),
 		),
@@ -60,7 +61,7 @@ func (a *App) StartQR() vecty.ComponentOrHTML {
 			vecty.If(a.connected,
 				elem.Paragraph(
 					vecty.Markup(
-						vecty.Class("card-footer-item"),
+						vecty.Class("card-footer-item", "has-background-success", "has-text-white", "has-text-weight-bold"),
 					),
 					vecty.Text(
 						fmt.Sprintf("Connected"),
