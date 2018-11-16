@@ -18,7 +18,9 @@ type (
 )
 
 var (
-	CmdConnect UICommand = "connect"
+	CmdConnect   UICommand = "connect"
+	CmdStartNext UICommand = "start_next"
+	CmdResult    UICommand = "result"
 
-	TypeAck MsgType = "ack"
+	Ack MsgType = "ack"
 )

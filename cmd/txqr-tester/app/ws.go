@@ -63,10 +63,19 @@ func (w *WSClient) processWSCommand(data []byte) {
 	case ws.CmdConnect:
 		log.Println("Got connect")
 		w.app.SetConnected(true)
+		w.sendMsg(&ws.UIResponse{Type: ws.Ack})
+	case ws.CmdStartNext:
+		log.Println("Got start_next")
+		// start animation
+	case ws.CmdResult:
+		log.Println("Got result")
+		// process result
+	default:
+		log.Printf("[ERROR] Invalid message '%s', ignoring", msg.Cmd)
 	}
 }
 
-func (w *WSClient) sendMsg(msg *ws.UIRequest) {
+func (w *WSClient) sendMsg(msg *ws.UIResponse) {
 	data, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("JSON marshal:", err)
