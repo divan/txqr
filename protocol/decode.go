@@ -56,10 +56,6 @@ func (d *Decoder) DecodeChunk(data string) error {
 	}
 	d.lastChunk = time.Now()
 
-	if d.start.IsZero() {
-		d.start = time.Now()
-	}
-
 	if data == "" || len(data) < 4 {
 		return fmt.Errorf("invalid frame: \"%s\"", data)
 	}
@@ -67,6 +63,10 @@ func (d *Decoder) DecodeChunk(data string) error {
 	idx := strings.IndexByte(data, '|')
 	if idx == -1 {
 		return fmt.Errorf("invalid frame: \"%s\"", data)
+	}
+
+	if d.start.IsZero() {
+		d.start = time.Now()
 	}
 
 	header := data[:idx]
@@ -176,4 +176,25 @@ func (d *Decoder) isCached(header string) bool {
 	// cache it
 	d.cache[header] = struct{}{}
 	return false
+}
+
+// TotalTimeMs returns the total scan duration in milliseconds.
+func (d *Decoder) TotalTimeMs() int64 {
+	dur := time.Since(d.start)
+	return int64(dur / time.Millisecond)
+}
+
+// Reset resets decoder, preparing it for the next run.
+func (d *Decoder) Reset() {
+	d.buffer = []byte{}
+	d.complete = false
+	d.total = 0
+	d.frames = []frameInfo{}
+	d.cache = map[string]struct{}{}
+
+	d.progress = 0
+	d.speed = 0
+	d.start = time.Time{}
+	d.lastChunk = time.Time{}
+	d.readInterval = 0
 }
