@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/divan/txqr/cmd/txqr-tester/ws"
+	"github.com/divan/txqr/protocol"
 	"github.com/gorilla/websocket"
 )
 
@@ -12,6 +13,13 @@ import (
 // via websockets.
 type Connector struct {
 	conn *websocket.Conn
+	*protocol.Decoder
+}
+
+func NewConnector() *Connector {
+	return &Connector{
+		Decoder: protocol.NewDecoder(),
+	}
 }
 
 // Connect attempts to establish connection to the WS server.
