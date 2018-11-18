@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"log"
 
 	"github.com/gopherjs/vecty"
 	"github.com/gopherjs/vecty/elem"
@@ -34,7 +33,6 @@ func renderPNG(img image.Image) vecty.ComponentOrHTML {
 // renderGIF is a helper for converting animated gif raw bytes into vecty-compatible
 // component displaying this image as aGIF.
 func renderGIF(data []byte) vecty.ComponentOrHTML {
-	log.Println("Rendering gif for", len(data))
 	src := base64.StdEncoding.EncodeToString(data)
 	src = "data:image/gif;base64," + src
 	return elem.Image(
