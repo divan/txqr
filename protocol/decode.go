@@ -180,6 +180,9 @@ func (d *Decoder) isCached(header string) bool {
 
 // TotalTimeMs returns the total scan duration in milliseconds.
 func (d *Decoder) TotalTimeMs() int64 {
+	if d.start.IsZero() {
+		return 0
+	}
 	dur := time.Since(d.start)
 	return int64(dur / time.Millisecond)
 }
