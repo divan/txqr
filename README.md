@@ -6,7 +6,7 @@ TXQR (Transfer via QR) is a protocol and set of tools and libs to transfer data 
 
 # Demo
 
-[![Demo](https://img.youtube.com/vi/-MnegPaMkgE/0.jpg)](https://www.youtube.com/watch?v=-MnegPaMkgE)
+[![Demo](./docs/demo.gif)]
 
 Reader iOS app in the demo (uses this lib via Gomobile): [https://github.com/divan/txqr-reader](https://github.com/divan/txqr-reader)
 
