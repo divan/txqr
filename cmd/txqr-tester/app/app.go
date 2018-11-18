@@ -139,7 +139,7 @@ func (a *App) ShowNext() {
 }
 
 func newTestData() []byte {
-	data := make([]byte, 5*1024)
+	data := make([]byte, 10*1024)
 	_, err := rand.Read(data)
 	if err != nil {
 		log.Println("[ERROR] Can't generate rand data: %v", err)
