@@ -30,7 +30,7 @@ func init() {
 
 // StartApp generates app page, serves it via http
 // and tries to open it using default browser.
-func StartApp(bind string) error {
+func StartApp(bind string, browserStart bool) error {
 	ip := GetLocalIP()
 	info := PageInfo{
 		WSAddress: fmt.Sprintf("ws://%s%s/ws", ip, bind),
@@ -40,7 +40,10 @@ func StartApp(bind string) error {
 	})
 	http.Handle("/", redirectToIndex(http.FileServer(assetFS())))
 	http.HandleFunc("/ws", NewWSBridge().Handle)
-	go StartBrowser("http://localhost" + bind)
+
+	if browserStart {
+		go StartBrowser("http://localhost" + bind)
+	}
 
 	return http.ListenAndServe(bind, nil)
 }
