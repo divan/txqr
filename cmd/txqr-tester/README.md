@@ -14,3 +14,5 @@ go build
 ```
 it will open browser automagically and display QR code. Change testing settings, put mobile phone onto the tripod, open txqr-tester-ios app and scan QR. The rest will happen automatically. You'll see the results table instead of Settings, and the button to download results in CSV.
 
+# Demo
+-[![Demo](./docs/demo_tester.gif)]

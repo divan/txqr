@@ -12,7 +12,6 @@ Reader iOS app in the demo (uses this lib via Gomobile): [https://github.com/div
 
 ## Automated tester app
 Also see `cmd/txqr-tester` app for automated testing of different encoder parameters.
-[![Demo](./docs/demo_tester.gif)]
 
 ### Licence
 
