@@ -36,7 +36,10 @@ func (e *Encoder) Encode(str string) ([]string, error) {
 		return []string{e.frame(0, len(str), str)}, nil
 	}
 
-	numChunks := len(str)/e.chunkLen + 1
+	numChunks := len(str) / e.chunkLen
+	if len(str)%e.chunkLen > 0 {
+		numChunks++
+	}
 
 	// TODO(divan): use sync.Pool as this probably will be used many times
 	ret := make([]string, numChunks)

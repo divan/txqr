@@ -39,6 +39,9 @@ func NewDecoderSize(size int) *Decoder {
 // Chunk expected to be validated (see Validate) before.
 func (d *Decoder) Decode(chunk string) error {
 	idx := strings.IndexByte(chunk, '|') // expected to be validated before
+	if idx == -1 {
+		return fmt.Errorf("invalid frame: \"%s\"", chunk)
+	}
 	header := chunk[:idx]
 
 	// continuous QR reading often sends the same chunk in a row, skip it
