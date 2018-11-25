@@ -1,4 +1,6 @@
-/*Package protocol defines the transmission protocol over QR codes.
+/*Package txqr implements the transmission protocol over QR codes.
+
+Intro
 
 The protocol allows to send a relatively small (fits into the memory fast)
 data of a known size. Stream data is not supported by design.
@@ -11,12 +13,12 @@ cases.
 
 The basic idea is to split the data into chunks, suitable for encoding as a
 single QR frame, add frame header/footer information and run it in the loop.
- - splitting into frame is crucial to adapt to desired QR code size/error
-   recovery level
- - header and footer contain enough information to uniquely identify frame and
-   be able to restore the whole data even if all frames received out of order.
- - loop is needed to make sure slow receiver has enough opportunity to restore
-   from missed frames
+
+- splitting into frame is crucial to adapt to desired QR code size/error recovery level
+
+- header and footer contain enough information to uniquely identify frame and be able to restore the whole data even if all frames received out of order.
+
+- loop is needed to make sure slow receiver has enough opportunity to restore from missed frames
 
 All data should be within alphanumeric space.
 No error correction is implemented, as QR code layer already has one.
@@ -40,4 +42,4 @@ For, example:
 
 
 */
-package protocol
+package txqr
