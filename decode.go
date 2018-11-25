@@ -3,25 +3,14 @@ package txqr
 import (
 	"fmt"
 	"strings"
-	"time"
-
-	"github.com/pyk/byten"
 )
 
 // Decoder represents protocol decode.
 type Decoder struct {
-	buffer   []byte
-	complete bool
-	total    int
-	frames   []frameInfo
-	cache    map[string]struct{}
-
-	progress int
-	speed    int // avg reading speed
-	start    time.Time
-
-	lastChunk    time.Time // last chunk decode request
-	readInterval time.Duration
+	buffer      []byte
+	read, total int
+	frames      []frameInfo
+	cache       map[string]struct{}
 }
 
 // frameInfo represents the information about read frames.
@@ -46,30 +35,12 @@ func NewDecoderSize(size int) *Decoder {
 	}
 }
 
-// DecodeChunk takes a single chunk of data and decodes it.
-func (d *Decoder) DecodeChunk(data string) error {
-	if d.IsCompleted() {
-		return nil
-	}
-	if !d.lastChunk.IsZero() {
-		d.readInterval = time.Now().Sub(d.lastChunk)
-	}
-	d.lastChunk = time.Now()
-
-	if data == "" || len(data) < 4 {
-		return fmt.Errorf("invalid frame: \"%s\"", data)
-	}
-
-	idx := strings.IndexByte(data, '|')
-	if idx == -1 {
-		return fmt.Errorf("invalid frame: \"%s\"", data)
-	}
-
-	if d.start.IsZero() {
-		d.start = time.Now()
-	}
-
+// Decode takes a single chunk of data and decodes it.
+// Chunk expected to be validated (see Validate) before.
+func (d *Decoder) Decode(data string) error {
+	idx := strings.IndexByte(data, '|') // expected to be validated before
 	header := data[:idx]
+
 	// continuous QR reading often sends the same chunk in a row, skip it
 	if d.isCached(header) {
 		return nil
@@ -98,7 +69,21 @@ func (d *Decoder) DecodeChunk(data string) error {
 
 	copy(d.buffer[offset:offset+size], payload)
 
-	d.updateProgress()
+	d.updateCompleted()
+
+	return nil
+}
+
+// Validate checks if a given chunk of data is a valid txqr protocol packet.
+func (d *Decoder) Validate(chunk string) error {
+	if chunk == "" || len(chunk) < 4 {
+		return fmt.Errorf("invalid frame: \"%s\"", chunk)
+	}
+
+	idx := strings.IndexByte(chunk, '|')
+	if idx == -1 {
+		return fmt.Errorf("invalid frame: \"%s\"", chunk)
+	}
 
 	return nil
 }
@@ -113,57 +98,24 @@ func (d *Decoder) DataBytes() []byte {
 	return d.buffer
 }
 
-// Speed returns avg reading speed.
-func (d *Decoder) Speed() string {
-	return fmt.Sprintf("%s/s", byten.Size(int64(d.speed)))
+// Length returns length of the decoded data.
+func (d *Decoder) Length() int {
+	return len(d.buffer)
 }
 
-// ReadInterval returns the latest read interval in ms.
-func (d *Decoder) ReadInterval() int64 {
-	return int64(d.readInterval / time.Millisecond)
+// Read returns amount of currently read bytes.
+func (d *Decoder) Read() int {
+	return d.read
 }
 
-// Progress returns reading progress in percentage.
-func (d *Decoder) Progress() int {
-	return d.progress
-}
-
-// TotalTime returns the total scan duration in human readable form - from first to last read chunk.
-func (d *Decoder) TotalTime() string {
-	dur := time.Since(d.start)
-	return formatDuration(dur)
-}
-
-// formatDuration converts "12.232312313s" to "12.2s"
-func formatDuration(d time.Duration) string {
-	if d > time.Second {
-		d = d - d%(100*time.Millisecond)
-	}
-	return d.String()
-}
-
-// TotalSize returns the data size in human readable form.
-func (d *Decoder) TotalSize() string {
-	return byten.Size(int64(len(d.buffer)))
+// Total returns total amount of data.
+func (d *Decoder) Total() int {
+	return d.total
 }
 
 // IsCompleted reports whether the read was completed successfully or not.
 func (d *Decoder) IsCompleted() bool {
-	return d.complete
-}
-
-// updateProgress updates progress and complete state of reading.
-// FIXME(divan): this approach might give false negatives in extreme cases, like
-// many dynamic changes of chunk sizes.
-func (d *Decoder) updateProgress() {
-	var cur int
-	for _, frame := range d.frames {
-		cur += frame.size
-	}
-
-	d.speed = cur * int(time.Second) / int(time.Since(d.start))
-	d.progress = 100 * cur / d.total
-	d.complete = cur == d.total
+	return d.read >= d.total
 }
 
 // isCached takes the header of chunk data and see if it's been cached.
@@ -178,26 +130,21 @@ func (d *Decoder) isCached(header string) bool {
 	return false
 }
 
-// TotalTimeMs returns the total scan duration in milliseconds.
-func (d *Decoder) TotalTimeMs() int64 {
-	if d.start.IsZero() {
-		return 0
-	}
-	dur := time.Since(d.start)
-	return int64(dur / time.Millisecond)
-}
-
 // Reset resets decoder, preparing it for the next run.
 func (d *Decoder) Reset() {
 	d.buffer = []byte{}
-	d.complete = false
-	d.total = 0
+	d.read, d.total = 0, 0
 	d.frames = []frameInfo{}
 	d.cache = map[string]struct{}{}
+}
 
-	d.progress = 0
-	d.speed = 0
-	d.start = time.Time{}
-	d.lastChunk = time.Time{}
-	d.readInterval = 0
+// TODO(divan): this will now work if frame size is dynamic. Rewrite it
+// to support it.
+func (d *Decoder) updateCompleted() {
+	var cur int
+	for _, frame := range d.frames {
+		cur += frame.size
+	}
+
+	d.read = cur
 }
