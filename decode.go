@@ -19,7 +19,7 @@ type frameInfo struct {
 	offset, size int
 }
 
-// NewDecoder creats and inits a new decoder.
+// NewDecoder creates and inits a new decoder.
 func NewDecoder() *Decoder {
 	return &Decoder{
 		buffer: []byte{},
@@ -27,7 +27,7 @@ func NewDecoder() *Decoder {
 	}
 }
 
-// NewDecoderSize creats and inits a new decoder for the known size.
+// NewDecoderSize creates and inits a new decoder for the known size.
 // Note, it doesn't limit the size of the input, but optimizes memory allocation.
 func NewDecoderSize(size int) *Decoder {
 	return &Decoder{
@@ -37,9 +37,9 @@ func NewDecoderSize(size int) *Decoder {
 
 // Decode takes a single chunk of data and decodes it.
 // Chunk expected to be validated (see Validate) before.
-func (d *Decoder) Decode(data string) error {
-	idx := strings.IndexByte(data, '|') // expected to be validated before
-	header := data[:idx]
+func (d *Decoder) Decode(chunk string) error {
+	idx := strings.IndexByte(chunk, '|') // expected to be validated before
+	header := chunk[:idx]
 
 	// continuous QR reading often sends the same chunk in a row, skip it
 	if d.isCached(header) {
@@ -62,7 +62,7 @@ func (d *Decoder) Decode(data string) error {
 		return fmt.Errorf("total changed during sequence, aborting")
 	}
 
-	payload := data[idx+1:]
+	payload := chunk[idx+1:]
 	size := len(payload)
 	// TODO(divan): optmize memory allocation
 	d.frames = append(d.frames, frameInfo{offset: offset, size: size})
