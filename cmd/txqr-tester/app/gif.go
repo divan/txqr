@@ -7,14 +7,14 @@ import (
 	"image"
 	"image/gif"
 
-	"github.com/divan/txqr/protocol"
+	"github.com/divan/txqr"
 	"github.com/divan/txqr/qr"
 )
 
 func AnimatedGif(data []byte, imgSize int, setup *testSetup) ([]byte, error) {
 	str := base64.StdEncoding.EncodeToString(data)
 	fmt.Printf("Generating Animated QR Gif for %d bytes\n", len(str))
-	chunks, err := protocol.NewEncoder(setup.size).Encode(str)
+	chunks, err := txqr.NewEncoder(setup.size).Encode(str)
 	if err != nil {
 		return nil, fmt.Errorf("encode: %v", err)
 	}

@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/divan/txqr/protocol"
+	"github.com/divan/txqr"
 	"github.com/mdp/qrterminal"
 	"github.com/pyk/byten"
 )
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	str := base64.StdEncoding.EncodeToString(data)
-	chunks, err := protocol.NewEncoder(*split).Encode(str)
+	chunks, err := txqr.NewEncoder(*split).Encode(str)
 	if err != nil {
 		log.Fatalf("Encode failed: %v", err)
 	}

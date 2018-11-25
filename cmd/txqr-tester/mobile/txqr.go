@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/divan/txqr"
 	"github.com/divan/txqr/cmd/txqr-tester/ws"
-	"github.com/divan/txqr/protocol"
 	"github.com/gorilla/websocket"
 )
 
@@ -13,12 +13,12 @@ import (
 // via websockets.
 type Connector struct {
 	conn *websocket.Conn
-	*protocol.Decoder
+	*txqr.Decoder
 }
 
 func NewConnector() *Connector {
 	return &Connector{
-		Decoder: protocol.NewDecoder(),
+		Decoder: txqr.NewDecoder(),
 	}
 }
 
