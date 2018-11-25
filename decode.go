@@ -115,7 +115,7 @@ func (d *Decoder) Total() int {
 
 // IsCompleted reports whether the read was completed successfully or not.
 func (d *Decoder) IsCompleted() bool {
-	return d.read >= d.total
+	return d.total > 0 && d.read >= d.total
 }
 
 // isCached takes the header of chunk data and see if it's been cached.

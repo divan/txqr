@@ -1,8 +1,10 @@
 package txqr
 
 import (
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestDecode(t *testing.T) {
@@ -42,6 +44,9 @@ func TestInvalidDecode(t *testing.T) {
 	if dec.IsCompleted() {
 		t.Fatalf("IsCompleted expected to be false")
 	}
+	if dec.Progress() != 89 {
+		t.Fatalf("Progress should be equal to %v, but got %v", 99, dec.Progress())
+	}
 	err = dec.Decode("100/101|" + "s")
 	if err != nil {
 		t.Fatalf("Decode failed: %v", err)
@@ -60,5 +65,31 @@ func TestInvalidDecode(t *testing.T) {
 
 	if dec.Data() != expected {
 		t.Fatalf("Expected to get '%s', but got '%s'", expected, dec.Data())
+	}
+}
+
+func TestProgress(t *testing.T) {
+	N := 100
+	dec := NewDecoder()
+	var err error
+
+	for i := 0; i < N; i++ {
+		chunk := fmt.Sprintf("%d/%d|s", i, N)
+		err = dec.Decode(chunk)
+		if err != nil {
+			t.Fatalf("Decode failed: %v", err)
+		}
+		if dec.Progress() != i+1 {
+			t.Fatalf("Progress should be equal to %v, but got %v", i+1, dec.Progress())
+		}
+	}
+}
+
+func TestTotalTime(t *testing.T) {
+	dur := 12345678 * time.Microsecond // 12.345678s
+	got := formatDuration(dur)
+	expected := "12.3s"
+	if got != expected {
+		t.Fatalf("Expected str to be '%s', but got '%s'", expected, got)
 	}
 }
