@@ -22,7 +22,7 @@ func solitonDistribution(n int) []float64 {
 
 // ids create slice with IDs for 0..n values.
 func ids(n int) []int64 {
-	N := n + n/10
+	N := n + n/2
 	ids := make([]int64, N)
 	for i := int64(0); i < int64(N); i++ {
 		ids[i] = i
