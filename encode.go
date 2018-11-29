@@ -9,13 +9,15 @@ import (
 
 // Encoder represents protocol encoder.
 type Encoder struct {
-	chunkLen int
+	chunkLen         int
+	redundancyFactor float64
 }
 
 // NewEncoder creates and inits a new encoder for the given chunk length.
 func NewEncoder(n int) *Encoder {
 	return &Encoder{
-		chunkLen: n,
+		chunkLen:         n,
+		redundancyFactor: 1.5,
 	}
 }
 
@@ -30,7 +32,7 @@ func (e *Encoder) Encode(str string) ([]string, error) {
 	codec := fountain.NewLubyCodec(numChunks, rand.New(fountain.NewMersenneTwister(200)), solitonDistribution(numChunks))
 
 	var msg = []byte(str) // copy of str, as EncodeLTBlock is destructive to msg
-	idsToEncode := ids(numChunks)
+	idsToEncode := ids(int(float64(numChunks) * e.redundancyFactor))
 	lubyBlocks := fountain.EncodeLTBlocks(msg, idsToEncode, codec)
 
 	// TODO(divan): use sync.Pool as this probably will be used many times
@@ -39,6 +41,11 @@ func (e *Encoder) Encode(str string) ([]string, error) {
 		ret[i] = e.frame(block.BlockCode, len(str), block.Data)
 	}
 	return ret, nil
+}
+
+// SetRedundancyFactor changes the value of redundancy factor.
+func (e *Encoder) SetRedundancyFactor(rf float64) {
+	e.redundancyFactor = rf
 }
 
 func (e *Encoder) frame(blockCode int64, total int, data []byte) string {
