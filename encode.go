@@ -2,8 +2,9 @@ package txqr
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
+	"math/rand"
+
+	fountain "github.com/google/gofountain"
 )
 
 // Encoder represents protocol encoder.
@@ -18,44 +19,36 @@ func NewEncoder(n int) *Encoder {
 	}
 }
 
-// EncodeReader encodes data from reader and splits it into chunks to be
-// futher converted to QR code frames.
-func (e *Encoder) EncodeReader(r io.Reader) ([]string, error) {
-	data, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, fmt.Errorf("read: %v", err)
-	}
-
-	return e.Encode(string(data))
-}
-
 // Encode encodes data from reader and splits it into chunks to be
 // futher converted to QR code frames.
 func (e *Encoder) Encode(str string) ([]string, error) {
 	if len(str) < e.chunkLen {
-		return []string{e.frame(0, len(str), str)}, nil
+		return []string{e.frame(0, len(str), []byte(str))}, nil
 	}
 
-	numChunks := len(str) / e.chunkLen
-	if len(str)%e.chunkLen > 0 {
-		numChunks++
-	}
+	numChunks := numberOfChunks(len(str), e.chunkLen)
+	codec := fountain.NewLubyCodec(numChunks, rand.New(fountain.NewMersenneTwister(200)), solitonDistribution(numChunks))
+
+	var msg = []byte(str) // copy of str, as EncodeLTBlock is destructive to msg
+	idsToEncode := ids(numChunks)
+	lubyBlocks := fountain.EncodeLTBlocks(msg, idsToEncode, codec)
 
 	// TODO(divan): use sync.Pool as this probably will be used many times
-	ret := make([]string, numChunks)
-	count := 0
-	for start := 0; start < len(str); start += e.chunkLen {
-		end := start + e.chunkLen
-		if end > len(str) {
-			end = len(str)
-		}
-
-		ret[count] = e.frame(start, len(str), str[start:end])
-		count++
+	ret := make([]string, len(lubyBlocks))
+	for i, block := range lubyBlocks {
+		ret[i] = e.frame(block.BlockCode, len(str), block.Data)
 	}
 	return ret, nil
 }
 
-func (e *Encoder) frame(count, total int, str string) string {
-	return fmt.Sprintf("%d/%d|%s", count, total, str)
+func (e *Encoder) frame(blockCode int64, total int, data []byte) string {
+	return fmt.Sprintf("%d/%d/%d|%s", blockCode, e.chunkLen, total, string(data))
+}
+
+func numberOfChunks(length, chunkLen int) int {
+	n := length / chunkLen
+	if length%chunkLen > 0 {
+		n++
+	}
+	return n
 }

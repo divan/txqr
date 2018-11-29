@@ -2,36 +2,35 @@ package txqr
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+
+	fountain "github.com/google/gofountain"
 )
 
 // Decoder represents protocol decode.
 type Decoder struct {
-	buffer      []byte
-	read, total int
-	frames      []frameInfo
-	cache       map[string]struct{}
-}
-
-// frameInfo represents the information about read frames.
-// As frames can change size dynamically, we keep size info as well.
-type frameInfo struct {
-	offset, size int
+	chunkLen  int
+	codec     fountain.Codec
+	fd        fountain.Decoder
+	completed bool
+	total     int
 }
 
 // NewDecoder creates and inits a new decoder.
 func NewDecoder() *Decoder {
-	return &Decoder{
-		buffer: []byte{},
-		cache:  make(map[string]struct{}),
-	}
+	return &Decoder{}
 }
 
 // NewDecoderSize creates and inits a new decoder for the known size.
-// Note, it doesn't limit the size of the input, but optimizes memory allocation.
-func NewDecoderSize(size int) *Decoder {
+func NewDecoderSize(size, chunkLen int) *Decoder {
+	numChunks := numberOfChunks(size, chunkLen)
+	codec := fountain.NewLubyCodec(numChunks, rand.New(fountain.NewMersenneTwister(200)), solitonDistribution(numChunks))
 	return &Decoder{
-		buffer: make([]byte, size),
+		codec:    codec,
+		fd:       codec.NewDecoder(size),
+		total:    size,
+		chunkLen: chunkLen,
 	}
 }
 
@@ -42,37 +41,32 @@ func (d *Decoder) Decode(chunk string) error {
 	if idx == -1 {
 		return fmt.Errorf("invalid frame: \"%s\"", chunk)
 	}
+
 	header := chunk[:idx]
 
-	// continuous QR reading often sends the same chunk in a row, skip it
-	if d.isCached(header) {
-		return nil
-	}
-
-	var offset, total int
-	_, err := fmt.Sscanf(header, "%d/%d", &offset, &total)
+	var (
+		blockCode       int64
+		chunkLen, total int
+	)
+	_, err := fmt.Sscanf(header, "%d/%d/%d", &blockCode, &chunkLen, &total)
 	if err != nil {
 		return fmt.Errorf("invalid header: %v (%s)", err, header)
 	}
 
-	// allocate enough memory at first total read
-	if d.total == 0 {
-		d.buffer = make([]byte, total)
-		d.total = total
-	}
-
-	if total > d.total {
-		return fmt.Errorf("total changed during sequence, aborting")
-	}
-
 	payload := chunk[idx+1:]
-	size := len(payload)
-	// TODO(divan): optmize memory allocation
-	d.frames = append(d.frames, frameInfo{offset: offset, size: size})
+	lubyBlock := fountain.LTBlock{
+		BlockCode: blockCode,
+		Data:      []byte(payload),
+	}
 
-	copy(d.buffer[offset:offset+size], payload)
-
-	d.updateCompleted()
+	if d.fd == nil {
+		d.total = total
+		d.chunkLen = chunkLen
+		numChunks := numberOfChunks(d.total, d.chunkLen)
+		d.codec = fountain.NewLubyCodec(numChunks, rand.New(fountain.NewMersenneTwister(200)), solitonDistribution(numChunks))
+		d.fd = d.codec.NewDecoder(total)
+	}
+	d.completed = d.fd.AddBlocks([]fountain.LTBlock{lubyBlock})
 
 	return nil
 }
@@ -93,22 +87,31 @@ func (d *Decoder) Validate(chunk string) error {
 
 // Data returns decoded data.
 func (d *Decoder) Data() string {
-	return string(d.buffer)
+	return string(d.DataBytes())
 }
 
 // DataBytes returns decoded data as a byte slice.
 func (d *Decoder) DataBytes() []byte {
-	return d.buffer
+	if d.fd == nil {
+		return []byte{}
+	}
+
+	if !d.completed {
+		return []byte{}
+	}
+	return d.fd.Decode()
 }
 
 // Length returns length of the decoded data.
+// TODO: remove
 func (d *Decoder) Length() int {
-	return len(d.buffer)
+	return 0
 }
 
 // Read returns amount of currently read bytes.
+// TODO: remove
 func (d *Decoder) Read() int {
-	return d.read
+	return 0
 }
 
 // Total returns total amount of data.
@@ -118,36 +121,12 @@ func (d *Decoder) Total() int {
 
 // IsCompleted reports whether the read was completed successfully or not.
 func (d *Decoder) IsCompleted() bool {
-	return d.total > 0 && d.read >= d.total
-}
-
-// isCached takes the header of chunk data and see if it's been cached.
-// If not, it caches it.
-func (d *Decoder) isCached(header string) bool {
-	if _, ok := d.cache[header]; ok {
-		return true
-	}
-
-	// cache it
-	d.cache[header] = struct{}{}
-	return false
+	return d.completed
 }
 
 // Reset resets decoder, preparing it for the next run.
 func (d *Decoder) Reset() {
-	d.buffer = []byte{}
-	d.read, d.total = 0, 0
-	d.frames = []frameInfo{}
-	d.cache = map[string]struct{}{}
-}
-
-// TODO(divan): this will now work if frame size is dynamic. Rewrite it
-// to support it.
-func (d *Decoder) updateCompleted() {
-	var cur int
-	for _, frame := range d.frames {
-		cur += frame.size
-	}
-
-	d.read = cur
+	d.fd = nil
+	d.completed = false
+	d.total = 0
 }

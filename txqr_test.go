@@ -17,10 +17,12 @@ func TestTXQR(t *testing.T) {
 	}
 
 	dec := NewDecoder()
-	for _, chunk := range chunks {
-		err = dec.Decode(chunk)
-		if err != nil {
-			t.Fatalf("Decode failed: %v", err)
+	for !dec.IsCompleted() {
+		for _, chunk := range chunks {
+			err = dec.Decode(chunk)
+			if err != nil {
+				t.Fatalf("Decode failed: %v", err)
+			}
 		}
 	}
 	got := dec.Data()
@@ -156,7 +158,6 @@ func BenchmarkTXQRErasures(b *testing.B) {
 		length  int
 		chunkSz int
 	}{
-		{10000, 1},
 		{10000, 10},
 		{10000, 100},
 		{10000, 1000},
