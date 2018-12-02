@@ -9,25 +9,44 @@ import (
 )
 
 func TestTXQR(t *testing.T) {
-	str := strings.Repeat("hello, world!", 1000)
-	enc := NewEncoder(10)
-	chunks, err := enc.Encode(str)
-	if err != nil {
-		t.Fatalf("Encode failed: %v", err)
+	var tests = []struct {
+		length  int
+		chunkSz int
+	}{
+		{10 * 1024, 100},
+		{10 * 1024, 200},
+		{10 * 1024, 300},
+		{10 * 1024, 400},
+		{10 * 1024, 500},
+		{10 * 1024, 650},
+		{10 * 1024, 800},
+		{10 * 1024, 900},
+		{10 * 1024, 1000},
 	}
 
-	dec := NewDecoder()
-	for !dec.IsCompleted() {
-		for _, chunk := range chunks {
-			err = dec.Decode(chunk)
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("%d, %d", test.length, test.chunkSz), func(t *testing.T) {
+			str := newTestData(test.length)
+			enc := NewEncoder(test.chunkSz)
+			chunks, err := enc.Encode(str)
 			if err != nil {
-				t.Fatalf("Decode failed: %v", err)
+				t.Fatalf("Encode failed: %v", err)
 			}
-		}
-	}
-	got := dec.Data()
-	if got != str {
-		t.Fatalf("Expected '%s', but got '%s'", str, got)
+
+			dec := NewDecoder()
+			for !dec.IsCompleted() {
+				for _, chunk := range chunks {
+					err = dec.Decode(chunk)
+					if err != nil {
+						t.Fatalf("Decode failed: %v", err)
+					}
+				}
+			}
+			got := dec.Data()
+			if got != str {
+				t.Fatalf("Expected '%s', but got '%s'", str, got)
+			}
+		})
 	}
 }
 
@@ -39,21 +58,22 @@ func TestTXQRErasures(t *testing.T) {
 		chunkSz int
 		fps     int
 	}{
-		{10000, 100, 3},
-		{10000, 300, 3},
-		{10000, 500, 3},
-		{10000, 800, 3},
-		{10000, 800, 3},
-		{10000, 100, 6},
-		{10000, 300, 6},
-		{10000, 500, 6},
-		{10000, 800, 6},
-		{10000, 800, 6},
-		{10000, 100, 9},
-		{10000, 300, 9},
-		{10000, 500, 9},
-		{10000, 800, 9},
-		{10000, 800, 9},
+		{10 * 1024, 100, 3},
+		{10 * 1024, 300, 3},
+		{10 * 1024, 500, 3},
+		{10 * 1024, 650, 3},
+		{10 * 1024, 800, 3},
+		{10 * 1024, 800, 3},
+		{10 * 1024, 100, 6},
+		{10 * 1024, 300, 6},
+		{10 * 1024, 500, 6},
+		{10 * 1024, 800, 6},
+		{10 * 1024, 800, 6},
+		{10 * 1024, 100, 9},
+		{10 * 1024, 300, 9},
+		{10 * 1024, 500, 9},
+		{10 * 1024, 800, 9},
+		{10 * 1024, 800, 9},
 	}
 
 	for _, test := range tests {
@@ -133,8 +153,8 @@ func BenchmarkTXQREncode(b *testing.B) {
 		{100, 10},
 		{1000, 10},
 		{1000, 100},
-		{10000, 100},
-		{10000, 1000},
+		{10 * 1024, 100},
+		{10 * 1024, 1000},
 	}
 
 	for _, test := range tests {
@@ -156,8 +176,8 @@ func BenchmarkTXQRDecode(b *testing.B) {
 		{100, 10},
 		{1000, 10},
 		{1000, 100},
-		{10000, 100},
-		{10000, 1000},
+		{10 * 1024, 100},
+		{10 * 1024, 1000},
 	}
 
 	for _, test := range tests {
@@ -188,9 +208,9 @@ func BenchmarkTXQRErasures(b *testing.B) {
 		length  int
 		chunkSz int
 	}{
-		{10000, 10},
-		{10000, 100},
-		{10000, 1000},
+		{10 * 1024, 10},
+		{10 * 1024, 100},
+		{10 * 1024, 1000},
 	}
 
 	for _, test := range tests {
