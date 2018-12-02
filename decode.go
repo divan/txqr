@@ -15,11 +15,14 @@ type Decoder struct {
 	fd        fountain.Decoder
 	completed bool
 	total     int
+	cache     map[string]struct{}
 }
 
 // NewDecoder creates and inits a new decoder.
 func NewDecoder() *Decoder {
-	return &Decoder{}
+	return &Decoder{
+		cache: make(map[string]struct{}),
+	}
 }
 
 // NewDecoderSize creates and inits a new decoder for the known size.
@@ -31,6 +34,7 @@ func NewDecoderSize(size, chunkLen int) *Decoder {
 		fd:       codec.NewDecoder(size),
 		total:    size,
 		chunkLen: chunkLen,
+		cache:    make(map[string]struct{}),
 	}
 }
 
@@ -43,6 +47,10 @@ func (d *Decoder) Decode(chunk string) error {
 	}
 
 	header := chunk[:idx]
+	// continuous QR reading often sends the same chunk in a row, skip it
+	if d.isCached(header) {
+		return nil
+	}
 
 	var (
 		blockCode       int64
@@ -128,5 +136,20 @@ func (d *Decoder) IsCompleted() bool {
 func (d *Decoder) Reset() {
 	d.fd = nil
 	d.completed = false
+	d.chunkLen = 0
 	d.total = 0
+	d.cache = map[string]struct{}{}
+	d.codec = nil
+}
+
+// isCached takes the header of chunk data and see if it's been cached.
+// If not, it caches it.
+func (d *Decoder) isCached(header string) bool {
+	if _, ok := d.cache[header]; ok {
+		return true
+	}
+
+	// cache it
+	d.cache[header] = struct{}{}
+	return false
 }
