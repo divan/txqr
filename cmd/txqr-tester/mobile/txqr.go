@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/divan/txqr"
 	"github.com/divan/txqr/cmd/txqr-tester/ws"
+	"github.com/divan/txqr/mobile"
 	"github.com/gorilla/websocket"
 )
 
