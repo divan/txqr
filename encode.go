@@ -17,7 +17,7 @@ type Encoder struct {
 func NewEncoder(n int) *Encoder {
 	return &Encoder{
 		chunkLen:         n,
-		redundancyFactor: 1.5,
+		redundancyFactor: 2.0,
 	}
 }
 
