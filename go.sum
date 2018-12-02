@@ -1,5 +1,7 @@
 github.com/elazarl/go-bindata-assetfs v1.0.0 h1:G/bYguwHIzWq9ZoyUQqrjTmJbbYn3j3CKKpKinvZLFk=
 github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=
+github.com/google/gofountain v0.0.0-20160820054803-4928733085e9 h1:Ngb7dbv9x/c5wWGpGxicH4iN8g90++AcRjwjHSllofA=
+github.com/google/gofountain v0.0.0-20160820054803-4928733085e9/go.mod h1:5K3gm9YuA6H5iBSG5JugS+7xTT0fK+E5zf8On8bgz1w=
 github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e h1:JKmoR8x90Iww1ks85zJ1lfDGgIiMDuIptTOhJq+zKyg=
 github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/vecty v0.0.0-20180525005238-a3bd138280bf h1:J7WjKCdpxMhXDzFPP6d41YonnCnPi1JkYOFxIPoH1E0=
