@@ -10,7 +10,7 @@ See related blog posts for more details:
 
 # Demo
 
-[![Demo](./docs/demo.gif)]
+![Demo](./docs/demo.gif)
 
 Reader iOS app in the demo (uses this lib via Gomobile): [https://github.com/divan/txqr-reader](https://github.com/divan/txqr-reader)
 
