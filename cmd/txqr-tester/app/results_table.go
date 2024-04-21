@@ -68,7 +68,7 @@ func (r *ResultsTable) thead() vecty.ComponentOrHTML {
 }
 
 func (r *ResultsTable) tresults() vecty.ComponentOrHTML {
-	rows := make([]vecty.MarkupOrChild, len(r.results))
+	rows := make([]vecty.MarkupOrChild, 0, len(r.results))
 	for _, res := range r.results {
 		rows = append(rows, tableRow(res))
 	}
