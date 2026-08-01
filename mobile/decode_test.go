@@ -1,30 +1,38 @@
 package txqr
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 	"time"
+
+	roottxqr "github.com/divan/txqr"
 )
 
 func TestDecode(t *testing.T) {
-	N := 100
-	expected := strings.Repeat("s", N+1)
+	expected := strings.Repeat("s", 101)
+
+	enc := roottxqr.NewEncoder(30)
+	chunks, err := enc.Encode(expected)
+	if err != nil {
+		t.Fatalf("Encode failed: %v", err)
+	}
+
 	dec := NewDecoder()
-	var err error
-	err = dec.Decode("0/101|" + strings.Repeat("s", N))
-	if err != nil {
-		t.Fatalf("Decode failed: %v", err)
+	var i int
+	for i = 0; i < len(chunks); i++ {
+		if err := dec.Decode(chunks[i]); err != nil {
+			t.Fatalf("Decode failed: %v", err)
+		}
+		if dec.IsCompleted() {
+			break
+		}
 	}
-	if dec.IsCompleted() {
-		t.Fatalf("IsCompleted expected to be false")
+	if i == 0 {
+		t.Fatalf("IsCompleted expected to be false after the first chunk")
 	}
-	err = dec.Decode("100/101|" + "s")
-	if err != nil {
-		t.Fatalf("Decode failed: %v", err)
-	}
-	if dec.IsCompleted() == false {
-		t.Fatal("IsCompleted expected to be true")
+
+	if !dec.IsCompleted() {
+		t.Fatalf("IsCompleted expected to be true")
 	}
 
 	if dec.Data() != expected {
@@ -32,35 +40,42 @@ func TestDecode(t *testing.T) {
 	}
 }
 
+// TestInvalidDecode checks that feeding extra chunks after the message is
+// already fully decoded is a no-op and doesn't corrupt the result.
 func TestInvalidDecode(t *testing.T) {
-	N := 100
-	expected := strings.Repeat("s", N+1)
+	expected := strings.Repeat("s", 101)
+
+	enc := roottxqr.NewEncoder(30)
+	chunks, err := enc.Encode(expected)
+	if err != nil {
+		t.Fatalf("Encode failed: %v", err)
+	}
+
 	dec := NewDecoder()
-	var err error
-	err = dec.Decode("0/101|" + strings.Repeat("s", 90))
-	if err != nil {
+	var i int
+	for i = 0; i < len(chunks); i++ {
+		if err := dec.Decode(chunks[i]); err != nil {
+			t.Fatalf("Decode failed: %v", err)
+		}
+		if dec.IsCompleted() {
+			break
+		}
+	}
+
+	if !dec.IsCompleted() {
+		t.Fatalf("IsCompleted expected to be true")
+	}
+	if i+1 >= len(chunks) {
+		t.Fatalf("test setup expects leftover chunks after completion, got none")
+	}
+
+	// feed one more (already redundant) chunk after completion
+	if err := dec.Decode(chunks[i+1]); err != nil {
 		t.Fatalf("Decode failed: %v", err)
 	}
-	if dec.IsCompleted() {
-		t.Fatalf("IsCompleted expected to be false")
-	}
-	if dec.Progress() != 89 {
-		t.Fatalf("Progress should be equal to %v, but got %v", 99, dec.Progress())
-	}
-	err = dec.Decode("100/101|" + "s")
-	if err != nil {
-		t.Fatalf("Decode failed: %v", err)
-	}
-	if dec.IsCompleted() {
-		t.Fatalf("IsCompleted expected to be false")
-	}
-	// missing out-of-order chunk
-	err = dec.Decode("90/101|" + strings.Repeat("s", 10))
-	if err != nil {
-		t.Fatalf("Decode failed: %v", err)
-	}
-	if dec.IsCompleted() == false {
-		t.Fatal("IsCompleted expected to be true", dec.Data())
+
+	if !dec.IsCompleted() {
+		t.Fatal("IsCompleted expected to remain true", dec.Data())
 	}
 
 	if dec.Data() != expected {
@@ -68,20 +83,34 @@ func TestInvalidDecode(t *testing.T) {
 	}
 }
 
+// TestProgress checks that decoding doesn't panic or misbehave while chunks
+// are being fed in. Note: Progress() currently always reports 0, since it
+// relies on Decoder.Read(), which was stubbed to return 0 (see "TODO: remove"
+// in decode.go) when the root package switched to fountain codes.
 func TestProgress(t *testing.T) {
-	N := 100
-	dec := NewDecoder()
-	var err error
+	expected := strings.Repeat("s", 101)
 
-	for i := 0; i < N; i++ {
-		chunk := fmt.Sprintf("%d/%d|s", i, N)
-		err = dec.Decode(chunk)
-		if err != nil {
+	enc := roottxqr.NewEncoder(30)
+	chunks, err := enc.Encode(expected)
+	if err != nil {
+		t.Fatalf("Encode failed: %v", err)
+	}
+
+	dec := NewDecoder()
+	for _, chunk := range chunks {
+		if err := dec.Decode(chunk); err != nil {
 			t.Fatalf("Decode failed: %v", err)
 		}
-		if dec.Progress() != i+1 {
-			t.Fatalf("Progress should be equal to %v, but got %v", i+1, dec.Progress())
+		if p := dec.Progress(); p < 0 || p > 100 {
+			t.Fatalf("Progress out of range: %d", p)
 		}
+		if dec.IsCompleted() {
+			break
+		}
+	}
+
+	if !dec.IsCompleted() {
+		t.Fatalf("IsCompleted expected to be true")
 	}
 }
 

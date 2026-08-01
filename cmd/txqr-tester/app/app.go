@@ -124,7 +124,7 @@ func (a *App) ShowNext() {
 	now := time.Now()
 	gif, err := AnimatedGif(a.testData, 500, setup)
 	if err != nil {
-		log.Println("[ERROR] Can't generate gif: %v", err)
+		log.Printf("[ERROR] Can't generate gif: %v", err)
 		// TODO: session abort
 		a.generatingQR = false
 		vecty.Rerender(a)
@@ -142,7 +142,7 @@ func newTestData() []byte {
 	data := make([]byte, 10*1024)
 	_, err := rand.Read(data)
 	if err != nil {
-		log.Println("[ERROR] Can't generate rand data: %v", err)
+		log.Printf("[ERROR] Can't generate rand data: %v", err)
 	}
 	return data
 }
